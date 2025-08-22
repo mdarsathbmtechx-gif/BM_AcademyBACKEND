@@ -4,6 +4,7 @@ import "aos/dist/aos.css";
 import { HiArrowRight } from "react-icons/hi";
 import { FaChartBar, FaPython, FaCloud, FaLaptopCode, FaBullhorn, FaPalette, FaRobot, FaDatabase } from "react-icons/fa";
 
+
 export default function CoursesList() {
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -24,7 +25,7 @@ export default function CoursesList() {
       duration: "6 Weeks",
       extra: "Project: Build your own website",
       outcome: "Job-ready web skills + portfolio",
-      icon: <FaLaptopCode className="text-3xl sm:text-4xl text-blue-500" />,
+      icon: <FaLaptopCode  className="text-3xl sm:text-4xl text-blue-500" />,
     },
     {
       title: "Full Stack Development",
