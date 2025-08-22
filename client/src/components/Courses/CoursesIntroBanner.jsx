@@ -1,102 +1,87 @@
+// src/components/CoursesIntroBanner.jsx
 import React, { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { FaGraduationCap, FaLightbulb, FaLaptopCode, FaChartLine, FaCloud } from "react-icons/fa";
+import { FaBookOpen, FaChalkboardTeacher } from "react-icons/fa";
+import { IoIosRocket } from "react-icons/io";
 
-export default function CoursesIntroBanner() {
+const CoursesIntroBanner = () => {
   useEffect(() => {
-    AOS.init({
-      duration: 900,
-      once: true,
-      easing: "ease-in-out",
-    });
+    AOS.init({ duration: 900, once: true, easing: "ease-in-out" });
   }, []);
 
   return (
-    <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 py-24 sm:py-32 px-4 sm:px-6 md:px-12 overflow-hidden text-white">
-      
-      {/* Floating Icons */}
-      <FaLaptopCode className="absolute top-5 left-2 sm:top-10 sm:left-5 text-yellow-300 text-3xl sm:text-4xl opacity-30 animate-bounce-slow" />
-      <FaChartLine className="absolute top-1/4 right-5 sm:top-1/3 sm:right-10 text-yellow-400 text-4xl sm:text-5xl opacity-25 animate-bounce-slower" />
-      <FaCloud className="absolute bottom-10 left-10 sm:bottom-20 sm:left-20 text-yellow-200 text-5xl sm:text-6xl opacity-20 animate-bounce-slowest" />
-      <FaGraduationCap className="absolute bottom-5 right-20 sm:bottom-10 sm:right-1/4 text-yellow-300 text-4xl sm:text-5xl opacity-25 animate-bounce-slower" />
+    <section className="relative w-full bg-black text-white overflow-hidden">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black via-gray-900 to-black opacity-95"></div>
 
-      {/* Decorative Gradient Shapes */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-yellow-100/10 rounded-full filter blur-2xl sm:blur-3xl -z-10"></div>
-      <div className="absolute bottom-0 right-1/3 w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] bg-yellow-300/10 rounded-full filter blur-2xl sm:blur-3xl -z-10"></div>
-
-      <div className="max-w-5xl mx-auto text-center space-y-6 sm:space-y-8">
+      <div
+        className="relative z-10 max-w-6xl mx-auto px-6 py-20 md:py-28 text-center"
+        data-aos="fade-up"
+      >
         {/* Heading */}
-        <h2
-          data-aos="fade-up"
-          className="text-3xl sm:text-4xl md:text-5xl font-extrabold flex justify-center items-center gap-3 hover:scale-105 transform transition duration-500"
-        >
-          <FaGraduationCap className="text-yellow-400" />
-          📚 <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500">Our Career-Building Courses</span>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-snug">
+          <span className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <IoIosRocket className="text-yellow-400" />
+            Explore Our{" "}
+            <span className="text-yellow-400 drop-shadow-md">Courses</span>
+          </span>
+          <span className="block mt-3 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-white to-yellow-400 animate-text-shimmer text-xl sm:text-2xl md:text-3xl">
+            Build Skills. Crack Exams. Shape Your Future.
+          </span>
         </h2>
 
-        {/* Subheading */}
-        <h3
-          data-aos="fade-up"
-          data-aos-delay="200"
-          className="text-lg sm:text-xl md:text-2xl font-medium flex justify-center items-center gap-2 flex-wrap"
-        >
-          <FaLightbulb className="text-yellow-400" />
-          Build <span className="font-bold text-yellow-400">Skills</span>. Earn <span className="font-bold text-yellow-400">Certifications</span>. Get <span className="font-bold text-yellow-400">Placed</span>.
-        </h3>
-
-        {/* Description */}
-        <p
-          data-aos="fade-up"
-          data-aos-delay="400"
-          className="text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed text-gray-200"
-        >
-          Explore our most popular <span className="font-semibold text-yellow-400">IT & career courses</span> designed for students, job seekers, and working professionals. Every course includes <span className="font-semibold text-yellow-400">hands-on projects</span>, <span className="font-semibold text-yellow-400">expert trainers</span>, and <span className="font-semibold text-yellow-400">certifications</span> to boost your career.
+        {/* Subtext */}
+        <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-10 leading-relaxed">
+          Whether it’s <span className="text-yellow-400">Govt Exams</span> or{" "}
+          <span className="text-yellow-400">IT Career Skills</span>, our programs
+          are designed to help you succeed with guidance from{" "}
+          <b className="text-yellow-400">expert mentors</b>.
         </p>
 
-        {/* CTA Buttons */}
-        <div
-          data-aos="fade-up"
-          data-aos-delay="600"
-          className="flex flex-col sm:flex-row justify-center gap-4 mt-4 sm:mt-6"
-        >
+        {/* Course Highlights */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
+          <div className="p-6 bg-yellow-400/10 border border-yellow-400 rounded-xl shadow-md hover:scale-105 transition">
+            <FaBookOpen className="text-yellow-400 text-3xl mb-3 mx-auto" />
+            <h3 className="text-yellow-400 font-bold text-lg">Govt Exam Prep</h3>
+            <p className="text-gray-200 text-sm mt-2">
+              TNPSC, SSC, Banking & more.
+            </p>
+          </div>
+          <div className="p-6 bg-yellow-400/10 border border-yellow-400 rounded-xl shadow-md hover:scale-105 transition">
+            <FaChalkboardTeacher className="text-yellow-400 text-3xl mb-3 mx-auto" />
+            <h3 className="text-yellow-400 font-bold text-lg">IT Career Courses</h3>
+            <p className="text-gray-200 text-sm mt-2">
+              Full Stack, Data Science, Cloud, AI.
+            </p>
+          </div>
+          <div className="p-6 bg-yellow-400/10 border border-yellow-400 rounded-xl shadow-md hover:scale-105 transition">
+            <IoIosRocket className="text-yellow-400 text-3xl mb-3 mx-auto" />
+            <h3 className="text-yellow-400 font-bold text-lg">Career Guidance</h3>
+            <p className="text-gray-200 text-sm mt-2">
+              AI-powered tests & mentorship.
+            </p>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex flex-wrap justify-center gap-4">
           <a
-            href="/sact"
-            className="px-6 py-3 bg-yellow-400 text-black rounded-lg font-semibold shadow-lg hover:bg-yellow-500 hover:shadow-xl transform hover:-translate-y-1 transition text-center"
+            href="/courses"
+            className="px-6 py-3 bg-yellow-400 text-black font-semibold rounded-xl hover:scale-105 transition"
           >
-            ▶ Take the Free Career Test
+            📘 Browse Courses
           </a>
           <a
             href="/apply"
-            className="px-6 py-3 bg-black text-yellow-400 rounded-lg font-semibold shadow-lg hover:bg-gray-800 hover:shadow-xl transform hover:-translate-y-1 transition text-center"
+            className="px-6 py-3 border-2 border-yellow-400 text-yellow-400 font-semibold rounded-xl hover:bg-yellow-400 hover:text-black transition"
           >
-            ℹ Learn More
+            🚀 Apply Now
           </a>
         </div>
-
-        {/* Scholarship Highlight */}
-        <div
-          data-aos="zoom-in"
-          data-aos-delay="800"
-          className="inline-block bg-yellow-400/20 text-yellow-300 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold shadow-md hover:bg-yellow-500/20 transition mt-4 sm:mt-6 text-base sm:text-lg"
-        >
-          🎯 Scholarships up to <span className="text-yellow-300 font-bold">85%</span> available via our{" "}
-          <span className="underline font-medium">SAT Entrance Test</span>.
-        </div>
       </div>
-
-      {/* Tailwind Custom Animations */}
-      <style>
-        {`
-          @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-          @keyframes bounce-slower { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-          @keyframes bounce-slowest { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-
-          .animate-bounce-slow { animation: bounce-slow 4s infinite ease-in-out; }
-          .animate-bounce-slower { animation: bounce-slower 6s infinite ease-in-out; }
-          .animate-bounce-slowest { animation: bounce-slowest 8s infinite ease-in-out; }
-        `}
-      </style>
     </section>
   );
-}
+};
+
+export default CoursesIntroBanner;
