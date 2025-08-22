@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { IoIosCall } from "react-icons/io";
 import { FaCheck } from "react-icons/fa6";
 import { FaRocket } from "react-icons/fa";
@@ -27,6 +27,8 @@ export default function WhyChooseUs() {
     },
   ];
 
+  const [hoverIndex, setHoverIndex] = useState(null);
+
   return (
     <section className="relative bg-gradient-to-r from-gray-900 via-black to-gray-900 py-16 sm:py-20 px-4 sm:px-6 lg:px-20 text-center text-white overflow-hidden">
       {/* Glow effect background */}
@@ -43,12 +45,24 @@ export default function WhyChooseUs() {
           {highlights.map((item, index) => (
             <div
               key={index}
-              className="p-6 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-xl border border-gray-700 hover:border-yellow-400 hover:shadow-yellow-400/40 transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 group"
+              className={`p-6 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-xl border border-gray-700 transition-all duration-500 transform cursor-pointer
+              ${hoverIndex === index ? "border-yellow-400 shadow-yellow-400/40 -translate-y-2 scale-105" : ""}
+              `}
+              onMouseEnter={() => setHoverIndex(index)}
+              onMouseLeave={() => setHoverIndex(null)}
+              onTouchStart={() => setHoverIndex(index)}
+              onTouchEnd={() => setHoverIndex(null)}
             >
-              <h3 className="text-lg sm:text-xl font-semibold text-yellow-300 inline-flex items-center gap-2 group-hover:text-yellow-400 transition-colors">
+              <h3
+                className={`text-lg sm:text-xl font-semibold inline-flex items-center gap-2 transition-colors 
+                ${hoverIndex === index ? "text-yellow-400" : "text-yellow-300"}`}
+              >
                 <FaCheck size={20} /> {item.title}
               </h3>
-              <p className="text-gray-400 mt-2 group-hover:text-gray-200 text-sm sm:text-base transition-colors">
+              <p
+                className={`mt-2 text-sm sm:text-base transition-colors 
+                ${hoverIndex === index ? "text-gray-200" : "text-gray-400"}`}
+              >
                 {item.desc}
               </p>
             </div>
@@ -59,7 +73,7 @@ export default function WhyChooseUs() {
         <div className="mt-12 flex flex-col sm:flex-row flex-wrap justify-center gap-4">
           <a
             href="#"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform hover:scale-105"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform active:scale-95 hover:scale-105"
           >
             <FaRocket size={20} />
             Join Now
@@ -67,12 +81,11 @@ export default function WhyChooseUs() {
 
           <a
             href="tel:+91XXXXXXXXXX"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform hover:scale-105"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform active:scale-95 hover:scale-105"
           >
             <IoIosCall size={20} />
             Call Us
           </a>
-
         </div>
       </div>
     </section>
