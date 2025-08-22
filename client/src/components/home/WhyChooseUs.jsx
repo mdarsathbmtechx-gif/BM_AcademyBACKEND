@@ -1,6 +1,7 @@
 import React from "react";
 import { IoIosCall } from "react-icons/io";
 import { FaCheck } from "react-icons/fa6";
+import { FaRocket } from "react-icons/fa";
 
 export default function WhyChooseUs() {
   const highlights = [
@@ -58,17 +59,20 @@ export default function WhyChooseUs() {
         <div className="mt-12 flex flex-col sm:flex-row flex-wrap justify-center gap-4">
           <a
             href="#"
-            className="px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform hover:scale-105 flex-1 sm:flex-auto text-center"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform hover:scale-105"
           >
-            🚀 Join Now
+            <FaRocket size={20} />
+            Join Now
           </a>
+
           <a
             href="tel:+91XXXXXXXXXX"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform hover:scale-105 flex-1 sm:flex-auto text-center"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform hover:scale-105"
           >
             <IoIosCall size={20} />
             Call Us
           </a>
+
         </div>
       </div>
     </section>
