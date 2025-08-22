@@ -54,9 +54,9 @@ export default function CoursesSection() {
   const [openIndex, setOpenIndex] = useState(null);
 
   return (
-    <section className="bg-gray-50 py-20 px-6">
+    <section className="bg-gray-50 py-16 sm:py-20 px-4 sm:px-6 md:px-12">
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-4xl font-bold text-center text-gray-900 mb-10">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-gray-900 mb-12">
           📚 Our Popular Courses
         </h2>
 
@@ -68,58 +68,58 @@ export default function CoursesSection() {
             {/* Header */}
             <button
               onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              className="w-full flex justify-between items-center p-6 text-left"
+              className="w-full flex justify-between items-center p-4 sm:p-6 text-left"
             >
               <div>
-                <h3 className="text-xl font-semibold text-gray-800">{course.title}</h3>
-                <p className="text-gray-600">{course.subtitle}</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800">{course.title}</h3>
+                <p className="text-gray-600 text-sm sm:text-base">{course.subtitle}</p>
               </div>
               {openIndex === i ? <ChevronUp /> : <ChevronDown />}
             </button>
 
             {/* Content */}
             <div
-              className={`px-6 pb-6 text-gray-700 transition-all duration-500 ease-in-out overflow-hidden ${
+              className={`px-4 sm:px-6 pb-4 sm:pb-6 text-gray-700 transition-all duration-500 ease-in-out overflow-hidden ${
                 openIndex === i ? "max-h-screen" : "max-h-0"
               }`}
             >
               {openIndex === i && (
                 <>
-                  <p><strong>Overview:</strong> {course.overview}</p>
+                  <p className="mb-3"><strong>Overview:</strong> {course.overview}</p>
 
-                  <div>
+                  <div className="mb-3">
                     <strong>What You Will Learn:</strong>
-                    <ul className="list-disc ml-6">
+                    <ul className="list-disc ml-5 sm:ml-6 mt-1 space-y-1">
                       {course.learn.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                        <li key={idx} className="text-sm sm:text-base">{item}</li>
                       ))}
                     </ul>
                   </div>
 
-                  <p><strong>Duration:</strong> {course.duration}</p>
+                  <p className="mb-3"><strong>Duration:</strong> {course.duration}</p>
 
-                  <div>
+                  <div className="mb-3">
                     <strong>Outcomes:</strong>
-                    <ul className="list-disc ml-6">
+                    <ul className="list-disc ml-5 sm:ml-6 mt-1 space-y-1">
                       {course.outcomes.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                        <li key={idx} className="text-sm sm:text-base">{item}</li>
                       ))}
                     </ul>
                   </div>
 
-                  <div>
+                  <div className="mb-4">
                     <strong>FAQs:</strong>
                     {course.faq.map((f, idx) => (
-                      <p key={idx}><b>Q:</b> {f.q} <br /> <b>A:</b> {f.a}</p>
+                      <p key={idx} className="text-sm sm:text-base mb-1"><b>Q:</b> {f.q} <br /> <b>A:</b> {f.a}</p>
                     ))}
                   </div>
 
-                  {/* CTA */}
-                  <div className="flex flex-wrap gap-4 mt-4">
-                    <button className="px-5 py-3 rounded-xl bg-yellow-400 text-black font-semibold shadow hover:bg-yellow-500 transition">
+                  {/* CTA Buttons */}
+                  <div className="flex flex-col sm:flex-row flex-wrap gap-3 mt-4">
+                    <button className="px-5 py-3 rounded-xl bg-yellow-400 text-black font-semibold shadow hover:bg-yellow-500 transition flex-1 text-center">
                       📞 Talk to a Counselor
                     </button>
-                    <button className="px-5 py-3 rounded-xl bg-black text-white font-semibold shadow hover:bg-gray-800 transition">
+                    <button className="px-5 py-3 rounded-xl bg-black text-white font-semibold shadow hover:bg-gray-800 transition flex-1 text-center">
                       📝 Apply Now
                     </button>
                   </div>
@@ -130,15 +130,17 @@ export default function CoursesSection() {
         ))}
 
         {/* Career Test & Scholarship */}
-        <div className="bg-yellow-100 rounded-2xl p-6 mt-10 text-center">
-          <h3 className="text-2xl font-bold mb-4">🔧 Career Test & Scholarship Tools (Free)</h3>
-          <p className="mb-3">✅ SACT – Smart Aptitude & Career Test → Get instant report + best-fit course suggestions</p>
-          <button className="px-5 py-3 rounded-xl bg-black text-white font-semibold shadow hover:bg-gray-800 transition mr-3">
-            Take Free Career Test
-          </button>
-          <button className="px-5 py-3 rounded-xl bg-yellow-400 text-black font-semibold shadow hover:bg-yellow-500 transition">
-            Apply for SAT Exam
-          </button>
+        <div className="bg-yellow-100 rounded-2xl p-4 sm:p-6 mt-10 text-center">
+          <h3 className="text-xl sm:text-2xl font-bold mb-4">🔧 Career Test & Scholarship Tools (Free)</h3>
+          <p className="mb-3 text-sm sm:text-base">✅ SACT – Smart Aptitude & Career Test → Get instant report + best-fit course suggestions</p>
+          <div className="flex flex-col sm:flex-row justify-center flex-wrap gap-3 mt-2">
+            <button className="px-5 py-3 rounded-xl bg-black text-white font-semibold shadow hover:bg-gray-800 transition flex-1 sm:flex-auto">
+              Take Free Career Test
+            </button>
+            <button className="px-5 py-3 rounded-xl bg-yellow-400 text-black font-semibold shadow hover:bg-yellow-500 transition flex-1 sm:flex-auto">
+              Apply for SAT Exam
+            </button>
+          </div>
         </div>
       </div>
     </section>

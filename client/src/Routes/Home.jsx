@@ -1,13 +1,14 @@
-import React from 'react'
+import React from 'react';
 import WelcomeBanner from '../components/home/WelcomeBanner';
 import HeroSection from '../components/home/HeroSection';
 import WhyChooseUs from '../components/home/WhyChooseUs';
-import { CEOsmessage } from '../components/home/CEOsMessage';
+import { CEOsMessage } from '../components/home/CEOsMessage';
 import Testimonials from '../components/home/Testimonials';
 import TrendingCourses from '../components/home/TrendingCourses';
 import SACTBanner from '../components/home/CareerGuidance';
 import CallToAction from '../components/home/ActionSection';
 import { LogIn } from 'lucide-react';
+
 
 
 const HomeRoutes = () => {
@@ -16,7 +17,7 @@ const HomeRoutes = () => {
             <WelcomeBanner />
             <HeroSection />
             <WhyChooseUs />
-            <CEOsmessage />
+            <CEOsMessage />
             <Testimonials />
             <TrendingCourses />
             <SACTBanner />

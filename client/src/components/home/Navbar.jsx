@@ -17,13 +17,13 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white shadow-md fixed w-full top-0 left-0 z-50">
-      <div className="flex justify-between items-center py-4 px-6">
+      <div className="flex justify-between items-center py-3 px-6">
         {/* Logo */}
         <Link to="/">
           <img
             src={Logo}
             alt="BM Academy"
-            className="h-16 sm:h-20 md:h-16 w-auto object-contain"
+            className="h-24 sm:h-28 md:h-16 w-auto object-contain"
           />
         </Link>
 
