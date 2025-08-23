@@ -13,8 +13,9 @@ import Contactsroutes from './Routes/Contacts'
 import Login from './components/Authentication/Login'
 import Signup from './components/Authentication/Signup'
 import ForgotPassword from './components/Authentication/ForgotPassword'
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import "slick-carousel/slick/slick.css"
+import "slick-carousel/slick/slick-theme.css"
+import Certificateroutes from './Routes/Certificate';
 
 
 export const App = () => {
@@ -32,6 +33,7 @@ export const App = () => {
         <Route path='/login' element={<Login/>}/>
         <Route path='/signup' element={<Signup/>}/>
         <Route path='/forgotpassword' element={<ForgotPassword/>}/>
+        <Route path='/verify' element={<Certificateroutes/>}/>
       
 
       </Routes>

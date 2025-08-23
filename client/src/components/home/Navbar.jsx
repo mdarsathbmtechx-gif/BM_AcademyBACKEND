@@ -17,13 +17,13 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white shadow-md fixed w-full top-0 left-0 z-50">
-      <div className="flex justify-between items-center py-3 px-6">
+      <div className="flex justify-between items-center h-20 px-6">
         {/* Logo */}
         <Link to="/">
           <img
             src={Logo}
             alt="BM Academy"
-            className="h-24 sm:h-28 md:h-16 w-auto object-contain"
+            className="max-h-24 md:max-h-28 w-auto object-contain"
           />
         </Link>
 
@@ -41,18 +41,20 @@ export default function Navbar() {
 
           {/* Desktop Auth Buttons */}
           <div className="flex space-x-4 ml-6">
-            <Link
-              to="/login"
-              className="px-5 py-2 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition"
-            >
-              Login
-            </Link>
-            <Link
-              to="/signup"
-              className="px-5 py-2 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition"
-            >
-              Sign Up
-            </Link>
+            {/* Login */}
+<Link to="/login">
+  <button className="w-[150px] bg-black h-[50px] flex items-center justify-center rounded-xl cursor-pointer relative overflow-hidden transition-all duration-500 ease-in-out shadow-md hover:scale-105 hover:shadow-lg before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-[#009b49] before:to-[rgb(105,184,141)] before:transition-all before:duration-500 before:ease-in-out before:z-[-1] before:rounded-xl hover:before:left-0 text-white">
+    Login
+  </button>
+</Link>
+
+{/* Sign Up Button */}
+<Link to="/signup">
+  <button className="w-[150px] bg-black h-[50px] flex items-center justify-center rounded-xl cursor-pointer relative overflow-hidden transition-all duration-500 ease-in-out shadow-md hover:scale-105 hover:shadow-lg before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-[#009b49] before:to-[rgb(105,184,141)] before:transition-all before:duration-500 before:ease-in-out before:z-[-1] before:rounded-xl hover:before:left-0 text-white">
+    Sign Up
+  </button>
+</Link>
+
           </div>
         </div>
 
@@ -75,9 +77,8 @@ export default function Navbar() {
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:hidden ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 border-b">
@@ -102,20 +103,30 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Auth Buttons */}
-        <div className="flex flex-col space-y-3 px-4 mt-4 border-t pt-4">
-          <Link
-            to="/login"
-            className="w-full px-6 py-2 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition"
-          >
-            Login
-          </Link>
-          <Link
-            to="/signup"
-            className="w-full px-6 py-2 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition"
-          >
-            Sign Up
-          </Link>
-        </div>
+        
+        {/* Mobile Auth Buttons */}
+<div className="flex flex-col space-y-3 mt-4 md:hidden">
+  {/* Login */}
+  <Link to="/login">
+    <button className="w-full bg-black h-[50px] flex items-center justify-center rounded-xl cursor-pointer relative overflow-hidden transition-all duration-500 ease-in-out shadow-md hover:scale-105 hover:shadow-lg 
+    before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r 
+    before:from-[#009b49] before:to-[rgb(105,184,141)] before:transition-all before:duration-500 before:ease-in-out before:z-[-1] 
+    before:rounded-xl hover:before:left-0 text-white">
+      Login
+    </button>
+  </Link>
+
+  {/* Sign Up */}
+  <Link to="/signup">
+    <button className="w-full bg-black h-[50px] flex items-center justify-center rounded-xl cursor-pointer relative overflow-hidden transition-all duration-500 ease-in-out shadow-md hover:scale-105 hover:shadow-lg 
+    before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r 
+    before:from-[#009b49] before:to-[rgb(105,184,141)] before:transition-all before:duration-500 before:ease-in-out before:z-[-1] 
+    before:rounded-xl hover:before:left-0 text-white">
+      Sign Up
+    </button>
+  </Link>
+</div>
+
       </div>
     </nav>
   );
