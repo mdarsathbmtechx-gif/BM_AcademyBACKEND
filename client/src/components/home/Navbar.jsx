@@ -102,8 +102,7 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Mobile Auth Buttons */}
-        
+       
         {/* Mobile Auth Buttons */}
 <div className="flex flex-col space-y-3 mt-4 md:hidden">
   {/* Login */}
