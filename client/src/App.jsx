@@ -16,7 +16,10 @@ import ForgotPassword from './components/Authentication/ForgotPassword'
 import "slick-carousel/slick/slick.css"
 import "slick-carousel/slick/slick-theme.css"
 import Certificateroutes from './Routes/Certificate';
-
+import StudentDashboard from "./Dashboard/StudentDashboard";
+import AdminDashboard from "./Dashboard/AdminDashboard";
+// PrivateRoute for role-based protection
+import PrivateRoute from "./Routes/PrivateRoute";
 
 export const App = () => {
   return (
@@ -34,8 +37,21 @@ export const App = () => {
         <Route path='/signup' element={<Signup/>}/>
         <Route path='/forgotpassword' element={<ForgotPassword/>}/>
         <Route path='/verify' element={<Certificateroutes/>}/>
-      
 
+
+          {/* Student Dashboard */}
+        <Route path="/dashboard/student" element={
+          <PrivateRoute role="student">
+            <StudentDashboard />
+          </PrivateRoute>
+        } />
+
+        {/* Admin Dashboard */}
+        <Route path="/dashboard/admin" element={
+          <PrivateRoute role="admin">
+            <AdminDashboard />
+          </PrivateRoute>
+        } />
       </Routes>
       <Footer/>
     </Router>

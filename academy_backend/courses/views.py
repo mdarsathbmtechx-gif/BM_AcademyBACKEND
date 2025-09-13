@@ -1,40 +1,33 @@
-# courses/views.py
-from rest_framework import generics, permissions
-from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Course, Enrollment
-from .serializers import UserSerializer, CourseSerializer, EnrollmentSerializer
+from .serializers import CourseSerializer, EnrollmentSerializer
 
-User = get_user_model()
+class CourseListView(APIView):
+    def get(self, request):
+        courses = Course.objects()
+        data = [{"id": str(c.id), "title": c.title, "description": c.description,
+                 "instructor": c.instructor.username} for c in courses]
+        return Response(data)
 
-# ----- User Signup -----
-class UserSignupView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.AllowAny]
+class CourseCreateView(APIView):
+    def post(self, request):
+        serializer = CourseSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            course = serializer.save()
+            return Response({"id": str(course.id), "title": course.title, "description": course.description}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# ----- Courses -----
-class CourseListCreateView(generics.ListCreateAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [permissions.IsAuthenticated]
+class EnrollmentView(APIView):
+    def post(self, request):
+        serializer = EnrollmentSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            enrollment = serializer.save()
+            return Response({"id": str(enrollment.id), "course": str(enrollment.course.id)}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def perform_create(self, serializer):
-        serializer.save(instructor=self.request.user)
-
-class CourseDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-# ----- Enrollments -----
-class EnrollmentListCreateView(generics.ListCreateAPIView):
-    queryset = Enrollment.objects.all()
-    serializer_class = EnrollmentSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        # each student sees only their enrollments
-        return self.queryset.filter(student=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(student=self.request.user)
+    def get(self, request):
+        enrollments = Enrollment.objects(user=request.user)
+        data = [{"id": str(e.id), "course": {"id": str(e.course.id), "title": e.course.title}} for e in enrollments]
+        return Response(data)

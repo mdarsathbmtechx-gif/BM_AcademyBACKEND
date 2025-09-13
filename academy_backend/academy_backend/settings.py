@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from mongoengine import connect
 
 load_dotenv()
 
@@ -17,13 +18,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'rest_framework_simplejwt',
     "rest_framework",
+    "rest_framework_simplejwt",
+    "corsheaders",
     "users",
     "courses",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -52,27 +55,20 @@ TEMPLATES = [
     },
 ]
 
-# MongoDB with Djongo
-DATABASES = {
-    "default": {
-        "ENGINE": "djongo",
-        "NAME": "academy_db",
-        "CLIENT": {
-            "host": os.getenv("MONGO_URI", "mongodb://localhost:27017/"),
-        }
-    }
-}
-
-AUTH_USER_MODEL = "users.User"
+# MongoDB connection
+connect(db="bm_academy", host="mongodb://localhost:27017/bm_academy")
 
 STATIC_URL = "/static/"
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    )
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
 }
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]

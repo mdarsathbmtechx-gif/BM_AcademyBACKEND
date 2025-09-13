@@ -1,18 +1,8 @@
-# courses/urls.py
 from django.urls import path
-from .views import UserSignupView, CourseListCreateView, CourseDetailView, EnrollmentListCreateView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .views import CourseListView, CourseCreateView, EnrollmentView
 
 urlpatterns = [
-    # ----- Authentication -----
-    path('users/signup/', UserSignupView.as_view(), name='user-signup'),
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
-    # ----- Courses -----
-    path('courses/', CourseListCreateView.as_view(), name='course-list-create'),
-    path('courses/<int:pk>/', CourseDetailView.as_view(), name='course-detail'),
-
-    # ----- Enrollments -----
-    path('enrollments/', EnrollmentListCreateView.as_view(), name='enrollment-list-create'),
+    path("", CourseListView.as_view(), name="courses-list"),
+    path("create/", CourseCreateView.as_view(), name="courses-create"),
+    path("enrollments/", EnrollmentView.as_view(), name="enrollments"),
 ]
