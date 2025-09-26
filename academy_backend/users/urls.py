@@ -1,7 +1,19 @@
 from django.urls import path
-from .views import SignupView, LoginView
+from .views import (
+    signup_api,
+    login_api,
+    google_login_api,
+    profile_api,
+    AdminLoginAPIView
+)
 
 urlpatterns = [
-    path("signup/", SignupView.as_view(), name="signup"),
-    path("login/", LoginView.as_view(), name="login"),
+    # Client / User endpoints
+    path('signup/', signup_api, name='user-signup'),
+    path('login/', login_api, name='user-login'),
+    path('google-login/', google_login_api, name='google-login'),
+    path('profile/', profile_api, name='profile'),
+
+    # Admin endpoint
+    path('admin/login/', AdminLoginAPIView.as_view(), name='admin-login'),
 ]

@@ -1,16 +1,30 @@
-import React from 'react'
-import CoursesIntroBanner from '../components/Courses/CoursesIntroBanner'
-import CoursesList from '../components/Courses/CoursesList'
-import Courses from '../components/Courses/Courses'
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import CoursesIntroBanner from "../components/Courses/CoursesIntroBanner";
+import CoursesList from "../components/Courses/CoursesList";
+import CourseDetail from "../components/Courses/CourseDetail";
+import Courses from "../components/Courses/Courses";
 
 const Coursesroutes = () => {
-    return (
-        <div>
-            <CoursesIntroBanner/>
-            <CoursesList/>
-            <Courses/>
-        </div>
-    )
-}
+  return (
+    <Routes>
+  {/* Main courses page */}
+  <Route
+    index
+    element={
+      <div>
+        <CoursesIntroBanner />
+        <CoursesList />
+        <Courses />
+      </div>
+    }
+  />
 
-export default Coursesroutes
+  {/* Individual course detail page */}
+  <Route path=":courseId" element={<CourseDetail />} />
+</Routes>
+
+  );
+};
+
+export default Coursesroutes;

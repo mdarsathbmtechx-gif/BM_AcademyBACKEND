@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { FaUserCircle } from "react-icons/fa";
 import Logo from "../../assets/img/Bm Academy logo .png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: "Courses", path: "/courses" },
@@ -15,10 +21,82 @@ export default function Navbar() {
     { name: "Contact", path: "/contacts" },
   ];
 
+  // ---------- Check login state ----------
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+
+    if (token && userData) {
+      setIsLoggedIn(true);
+      setUser(JSON.parse(userData));
+    }
+
+    // Optional: silently refresh profile from backend
+    if (token) {
+      fetch("http://127.0.0.1:8000/api/users/profile/", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Unauthorized");
+          return res.json();
+        })
+        .then((data) => setUser(data))
+        .catch((err) => {
+          console.log("Profile refresh failed:", err.message);
+          // Do NOT log out user, keep Navbar showing logged-in state
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  // Listen for login/logout from other tabs
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const token = localStorage.getItem("token");
+      const userData = localStorage.getItem("user");
+      if (token && userData) {
+        setIsLoggedIn(true);
+        setUser(JSON.parse(userData));
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    setUser(null);
+    setDropdownOpen(false);
+    navigate("/login");
+  };
+
+  const authButtons = (
+    <>
+      <Link to="/login">
+        <button className="w-[150px] bg-black h-[50px] flex items-center justify-center rounded-xl text-white">
+          Login
+        </button>
+      </Link>
+      <Link to="/signup">
+        <button className="w-[150px] bg-black h-[50px] flex items-center justify-center rounded-xl text-white">
+          Sign Up
+        </button>
+      </Link>
+    </>
+  );
+
+  if (loading) return null; // Prevent flashing login/signup while checking token
+
   return (
     <nav className="bg-white shadow-md fixed w-full top-0 left-0 z-50">
       <div className="flex justify-between items-center h-20 px-6">
-        {/* Logo */}
         <Link to="/">
           <img
             src={Logo}
@@ -27,7 +105,6 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (
             <Link
@@ -39,22 +116,39 @@ export default function Navbar() {
             </Link>
           ))}
 
-          {/* Desktop Auth Buttons */}
           <div className="flex space-x-4 ml-6">
-            {/* Login */}
-<Link to="/login">
-  <button className="w-[150px] bg-black h-[50px] flex items-center justify-center rounded-xl cursor-pointer relative overflow-hidden transition-all duration-500 ease-in-out shadow-md hover:scale-105 hover:shadow-lg before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-[#009b49] before:to-[rgb(105,184,141)] before:transition-all before:duration-500 before:ease-in-out before:z-[-1] before:rounded-xl hover:before:left-0 text-white">
-    Login
-  </button>
-</Link>
-
-{/* Sign Up Button */}
-<Link to="/signup">
-  <button className="w-[150px] bg-black h-[50px] flex items-center justify-center rounded-xl cursor-pointer relative overflow-hidden transition-all duration-500 ease-in-out shadow-md hover:scale-105 hover:shadow-lg before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-[#009b49] before:to-[rgb(105,184,141)] before:transition-all before:duration-500 before:ease-in-out before:z-[-1] before:rounded-xl hover:before:left-0 text-white">
-    Sign Up
-  </button>
-</Link>
-
+            {isLoggedIn ? (
+              <div className="relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center"
+                >
+                  <FaUserCircle
+                    size={30}
+                    className="text-gray-700 hover:text-yellow-500"
+                  />
+                </button>
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg">
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              authButtons
+            )}
           </div>
         </div>
 
@@ -67,7 +161,6 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Overlay */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/60 z-40 md:hidden"
@@ -75,12 +168,11 @@ export default function Navbar() {
         />
       )}
 
-      {/* Mobile Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:hidden ${isOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
-        {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">Menu</h2>
           <button onClick={() => setIsOpen(false)} className="focus:outline-none">
@@ -88,7 +180,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Links */}
         <div className="flex flex-col space-y-4 p-4">
           {navLinks.map((link) => (
             <Link
@@ -102,30 +193,29 @@ export default function Navbar() {
           ))}
         </div>
 
-       
-        {/* Mobile Auth Buttons */}
-<div className="flex flex-col space-y-3 mt-4 md:hidden">
-  {/* Login */}
-  <Link to="/login">
-    <button className="w-full bg-black h-[50px] flex items-center justify-center rounded-xl cursor-pointer relative overflow-hidden transition-all duration-500 ease-in-out shadow-md hover:scale-105 hover:shadow-lg 
-    before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r 
-    before:from-[#009b49] before:to-[rgb(105,184,141)] before:transition-all before:duration-500 before:ease-in-out before:z-[-1] 
-    before:rounded-xl hover:before:left-0 text-white">
-      Login
-    </button>
-  </Link>
-
-  {/* Sign Up */}
-  <Link to="/signup">
-    <button className="w-full bg-black h-[50px] flex items-center justify-center rounded-xl cursor-pointer relative overflow-hidden transition-all duration-500 ease-in-out shadow-md hover:scale-105 hover:shadow-lg 
-    before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r 
-    before:from-[#009b49] before:to-[rgb(105,184,141)] before:transition-all before:duration-500 before:ease-in-out before:z-[-1] 
-    before:rounded-xl hover:before:left-0 text-white">
-      Sign Up
-    </button>
-  </Link>
-</div>
-
+        <div className="flex flex-col space-y-3 mt-4 md:hidden px-4">
+          {isLoggedIn ? (
+            <div className="flex flex-col space-y-2">
+              <Link to="/profile" onClick={() => setIsOpen(false)}>
+                <FaUserCircle
+                  size={30}
+                  className="text-gray-700 hover:text-yellow-500"
+                />
+              </Link>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsOpen(false);
+                }}
+                className="text-red-500 font-medium hover:text-red-700"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            authButtons
+          )}
+        </div>
       </div>
     </nav>
   );

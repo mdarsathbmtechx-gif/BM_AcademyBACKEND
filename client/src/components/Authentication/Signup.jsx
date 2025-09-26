@@ -1,116 +1,142 @@
 import React, { useState } from "react";
-import API from "../../api";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [fullName, setFullName] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("student"); // default role
 
+  // Centralized function to store token & user
+  const storeUserData = (token, user) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+    window.dispatchEvent(new Event("storage")); // update Navbar immediately
+  };
+
+  // ----------------- Normal Signup -----------------
   const handleSignup = async (e) => {
-  e.preventDefault();
-  if (password !== confirmPassword) {
-    alert("Passwords do not match!");
-    return;
-  }
+    e.preventDefault();
 
-  try {
-    // ✅ Use plain axios (no Authorization header) for signup
-    await axios.post("http://127.0.0.1:8000/api/users/signup/", {
-      username: fullName, // must match Django’s expected field
-      email,
-      password,
-      role, // only if backend supports it
-    });
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
 
-    // ✅ Use plain axios again for login
-    const loginRes = await axios.post("http://127.0.0.1:8000/api/token/", {
-      username: fullName,
-      password,
-    });
+    try {
+      // 1️⃣ Signup
+      await axios.post(
+        "http://127.0.0.1:8000/api/users/signup/",
+        { name, email, phone, password, role: "client" },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-    // Store tokens in localStorage
-    localStorage.setItem("access_token", loginRes.data.access);
-    localStorage.setItem("refresh_token", loginRes.data.refresh);
-    localStorage.setItem("role", role);
+      // 2️⃣ Auto-login after signup
+      const res = await axios.post("http://127.0.0.1:8000/api/users/login/", {
+        email,
+        password,
+      });
 
-    // ✅ Now navigation works based on role
-    if (role === "admin") navigate("/dashboard/admin");
-    else navigate("/dashboard/student");
+      storeUserData(res.data.token, res.data.user);
+      navigate("/dashboard/student");
+    } catch (err) {
+      console.error(err.response?.data || err);
+      alert(err.response?.data?.error || "Signup failed!");
+    }
+  };
 
-  } catch (err) {
-    console.error(err.response?.data || err);
-    alert("Signup failed!");
-  }
-};
+  // ----------------- Google Signup/Login -----------------
+  const handleGoogleLogin = async (credentialResponse) => {
+    const token = credentialResponse.credential;
 
+    try {
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/users/google-login/",
+        { token },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      storeUserData(res.data.token || res.data.access, res.data.user);
+      navigate("/dashboard/student");
+    } catch (err) {
+      console.error("Google signup failed:", err.response?.data || err.message);
+      alert("Google signup failed!");
+    }
+  };
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-yellow-50 to-white flex items-start justify-center pt-28 px-6">
-      <div className="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-yellow-600 mb-6 text-center">
-          🎓 Sign Up for BM Academy
-        </h2>
-        <form className="space-y-4" onSubmit={handleSignup}>
+    <section className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
+
+        {/* Normal signup form */}
+        <form onSubmit={handleSignup} className="space-y-4">
           <input
             type="text"
-            placeholder="👤 Full Name"
-            className="w-full p-4 border rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Full Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
+            className="w-full p-4 border rounded-xl"
           />
           <input
             type="email"
-            placeholder="📧 Email Address"
-            className="w-full p-4 border rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="w-full p-4 border rounded-xl"
+          />
+          <input
+            type="tel"
+            placeholder="Phone Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+            className="w-full p-4 border rounded-xl"
           />
           <input
             type="password"
-            placeholder="🔒 Password"
-            className="w-full p-4 border rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="w-full p-4 border rounded-xl"
           />
           <input
             type="password"
-            placeholder="🔒 Confirm Password"
-            className="w-full p-4 border rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+            placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
+            className="w-full p-4 border rounded-xl"
           />
-          {/* Role selection */}
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full p-4 border rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-          >
-            <option value="student">Student</option>
-            <option value="admin">Admin</option>
-          </select>
-
           <button
             type="submit"
-            className="w-full py-4 bg-yellow-500 text-black font-bold rounded-xl shadow hover:bg-yellow-400 transition"
+            className="w-full py-3 bg-yellow-500 text-black font-bold rounded-xl"
           >
-            ✅ Sign Up
+            Sign Up
           </button>
         </form>
-        <div className="mt-4 text-center text-sm text-gray-600">
+
+        {/* Google signup/login */}
+        <div className="mt-4 flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() => console.log("Google signup failed")}
+          />
+        </div>
+
+        <p className="text-center mt-4">
           Already have an account?{" "}
           <a href="/login" className="text-yellow-600 hover:underline">
-            Login here
+            Login
           </a>
-        </div>
+        </p>
       </div>
     </section>
   );

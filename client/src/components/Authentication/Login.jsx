@@ -1,79 +1,102 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import API from "../../api"; // your axios instance
+import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Centralized function to store token & user
+  const storeUserData = (token, user) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+    window.dispatchEvent(new Event("storage")); // update Navbar immediately
+  };
+
+  // ----------------- Normal Email/Password Login -----------------
   const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
-      // Login API call
-      const res = await API.post("token/", {
-        username: email, // or your backend expects "username"?
+      const res = await axios.post("http://127.0.0.1:8000/api/users/login/", {
+        email,
         password,
       });
 
-      // Store JWT token in localStorage
-      localStorage.setItem("access_token", res.data.access);
-
-      // Get role from backend or localStorage (assuming you store role at signup)
-      const role = localStorage.getItem("role"); 
-
-      // Redirect based on role
-      if (role === "admin") navigate("/dashboard/admin");
-      else navigate("/dashboard/student");
-
+      storeUserData(res.data.token, res.data.user);
+      navigate("/dashboard/student");
     } catch (err) {
       console.error(err.response?.data || err);
-      alert("Login failed!");
+      alert(err.response?.data?.error || "Invalid credentials");
+    }
+  };
+
+  // ----------------- Google Login -----------------
+  const handleGoogleLogin = async (credentialResponse) => {
+    const token = credentialResponse.credential;
+
+    try {
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/users/google-login/",
+        { token },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      storeUserData(res.data.token || res.data.access, res.data.user);
+      navigate("/dashboard/student");
+    } catch (err) {
+      console.error("Google login failed:", err.response?.data || err.message);
+      alert("Google login failed!");
     }
   };
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-yellow-50 to-white flex items-start justify-center pt-28 px-6">
-      <div className="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-yellow-600 mb-6 text-center">
-          🎓 Login to BM Academy
-        </h2>
-        <form className="space-y-4" onSubmit={handleLogin}>
+    <section className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+
+        {/* Email/password login form */}
+        <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
-            placeholder="📧 Enter your email"
-            className="w-full p-4 border rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="w-full p-4 border rounded-xl"
           />
           <input
             type="password"
-            placeholder="🔒 Enter your password"
-            className="w-full p-4 border rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="w-full p-4 border rounded-xl"
           />
           <button
             type="submit"
-            className="w-full py-4 bg-yellow-500 text-black font-bold rounded-xl shadow hover:bg-yellow-400 transition"
+            className="w-full py-3 bg-yellow-500 text-black font-bold rounded-xl"
           >
-            ✅ Login
+            Login
           </button>
         </form>
-        <div className="mt-4 text-center text-sm text-gray-600">
-          <Link
-            to="/forgotpassword"
-            className="px-5 py-2 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition"
-          >
-            Forgot Password
-          </Link>
-          <span className="mx-2">|</span>
-          <Link to="/signup" className="text-yellow-600 hover:underline">
-            Sign Up
-          </Link>
+
+        {/* Google login */}
+        <div className="mt-4 flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() => console.log("Google login failed")}
+          />
         </div>
+
+        <p className="text-center mt-4">
+          Don’t have an account?{" "}
+          <a href="/signup" className="text-yellow-600 hover:underline">
+            Sign Up
+          </a>
+        </p>
       </div>
     </section>
   );

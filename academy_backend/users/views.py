@@ -1,40 +1,182 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserSerializer
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
 from .models import User
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny 
+from .serializers import UserLoginSerializer
+from .utils import create_jwt  # function to create JWT
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+import jwt
+import datetime
+import json
 
-class SignupView(APIView):
-    permission_classes = [AllowAny]
-    
+# JWT secret
+JWT_SECRET = "72e55c024d5279e91a73db4df975f81bb6cd98c4d782087c60f50d510c0f114f"
+CLIENT_ID = "281995264661-p0jsb5s26huk2auv0krl7nc28e3jmk26.apps.googleusercontent.com"
+
+
+def generate_jwt(user):
+    payload = {
+        "user_id": str(user.id),
+        "email": user.email,
+        "role": user.role,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7),
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+    return token
+
+
+# ----------------- User Signup -----------------
+@csrf_exempt
+def signup_api(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
+    data = json.loads(request.body)
+    name = data.get("name")
+    email = data.get("email")
+    password = data.get("password")
+    phone = data.get("phone")
+
+    if not name or not email or not password or not phone:
+        return JsonResponse({"error": "Name, email, phone, and password are required"}, status=400)
+
+    if User.objects(email=email).first():
+        return JsonResponse({"error": "Email already registered"}, status=400)
+
+    user = User(name=name, email=email, phone=phone)
+    user.set_password(password)
+    user.role = "client"
+    user.save()
+
+    return JsonResponse({"message": "Signup successful"})
+
+
+# ----------------- User / Admin Login -----------------
+@csrf_exempt
+def login_api(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
+    data = json.loads(request.body)
+    email = data.get("email")
+    password = data.get("password")
+    role = data.get("role", "client")  # optional: "admin" or "client"
+
+    user = User.objects(email=email, role=role).first()
+    if not user or not user.check_password(password):
+        return JsonResponse({"error": "Invalid credentials"}, status=401)
+
+    token = generate_jwt(user)
+    return JsonResponse({
+        "token": token,
+        "user": {
+            "email": user.email,
+            "role": user.role
+        }
+    })
+
+
+# ----------------- Google Login -----------------
+@csrf_exempt
+def google_login_api(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST method required"}, status=400)
+
+    body = json.loads(request.body)
+    token = body.get("token")
+
+    try:
+        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), CLIENT_ID)
+        email = idinfo.get("email")
+        if not email:
+            return JsonResponse({"error": "Email not found in token"}, status=400)
+
+        # Check if user exists
+        user = User.objects(email=email).first()
+        if not user:
+            user = User(email=email, role="client")
+            user.set_password("google_dummy_password")
+            user.save()
+
+        jwt_token = generate_jwt(user)
+        return JsonResponse({
+            "access": jwt_token,
+            "user": {
+                "email": user.email,
+                "role": user.role
+            }
+        })
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+# ----------------- Profile -----------------
+from .decorators import jwt_required
+
+@jwt_required
+def profile_api(request):
+    user = request.user
+    return JsonResponse({"email": user.email, "role": user.role})
+
+
+# ----------------- Admin Login DRF Style -----------------
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from .models import User
+from .serializers import UserLoginSerializer
+from .utils import create_jwt  
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AdminLoginAPIView(APIView):
+    authentication_classes = []  # ❌ Disable authentication
+    permission_classes = []      # ❌ Allow public access
+
     def post(self, request):
-        data = request.data
-        if User.objects(username=data.get("username")).first():
-            return Response({"error": "Username already exists."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        serializer = UserSerializer(data=data)
+        serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
+            email = serializer.validated_data["email"]
+            password = serializer.validated_data["password"]
+
+            user = User.objects(email=email, role="admin").first()
+            if not user:
+                return Response({"detail": "Admin not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            if not user.check_password(password):
+                return Response({"detail": "Invalid password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            token = create_jwt(user)
             return Response({
-                "id": str(user.id),
-                "username": user.username,
-                "email": user.email
-            }, status=status.HTTP_201_CREATED)
+                "access": token,
+                "user": {
+                    "email": user.email,
+                    "role": user.role
+                }
+            })
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class LoginView(APIView):
-    permission_classes = [AllowAny]
-    
-    def post(self, request):
-        data = request.data
-        user = User.objects(username=data.get("username")).first()
-        if not user or not user.check_password(data.get("password")):
-            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        })
+
+
+from django.http import JsonResponse
+from users.models import User
+
+def list_users(request):
+    if request.method == "GET":
+        users = User.objects.all()  # Fetch all users
+        users_list = [
+            {
+                "id": str(user.id),
+                "name": getattr(user, "name", ""),  # Added name
+                "email": user.email,
+                "phone": getattr(user, "phone", ""),  # Phone number
+            }
+            for user in users
+        ]
+        return JsonResponse(users_list, safe=False)

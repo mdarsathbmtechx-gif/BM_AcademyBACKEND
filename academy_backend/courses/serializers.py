@@ -1,25 +1,22 @@
 from rest_framework import serializers
-from .models import Course, Enrollment
+from .models import Course
 
 class CourseSerializer(serializers.Serializer):
+    id = serializers.SerializerMethodField()  # for frontend
     title = serializers.CharField()
     description = serializers.CharField()
+    mode = serializers.CharField()
+    duration = serializers.CharField()
+    price = serializers.FloatField()
+    enrolled_status = serializers.CharField()
+    modules = serializers.ListField(child=serializers.CharField(), default=list)
+    image_url = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField(read_only=True)
 
-    def create(self, validated_data):
-        user = self.context['request'].user
-        course = Course(**validated_data, instructor=user)
-        course.save()
-        return course
+    def get_id(self, obj):
+        return str(obj.id)  # Convert ObjectId to string
 
-class EnrollmentSerializer(serializers.Serializer):
-    course_id = serializers.CharField()
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        from .models import Course, Enrollment
-        course = Course.objects(id=validated_data["course_id"]).first()
-        if not course:
-            raise serializers.ValidationError("Course not found")
-        enrollment = Enrollment(user=user, course=course)
-        enrollment.save()
-        return enrollment
+    def get_image_url(self, obj):
+        if hasattr(obj, 'image') and obj.image:
+            return obj.image.url
+        return None
