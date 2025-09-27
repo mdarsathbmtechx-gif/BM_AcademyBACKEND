@@ -7,6 +7,10 @@ from datetime import timedelta
 # Base directory
 # ------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
+import os
+
+PORT = int(os.environ.get("PORT", 8000))
+
 
 # ------------------------
 # SECURITY
