@@ -7,4 +7,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  resolve: {
+    alias: {
+      "@" : Path2D.react(__dirname, "./src")
+    }
+  }
 });
