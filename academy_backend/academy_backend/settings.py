@@ -78,20 +78,37 @@ TEMPLATES = [
 # ------------------------
 # Database (for Django auth/admin)
 # ------------------------
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+from mongoengine import connect
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables
+load_dotenv()
+
+# ------------------------
+# Database (for Django auth/admin)
+# ------------------------
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / "db.sqlite3",
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
 # ------------------------
 # MongoDB connection (for Courses via MongoEngine)
 # ------------------------
-connect(
-    db="bm_academy",
-    host="mongodb://localhost:27017/bm_academy"
-)
+MONGO_ENV = os.getenv("MONGO_ENV", "local")  # default = local
+
+if MONGO_ENV == "atlas":
+    MONGO_URI = os.getenv("MONGO_ATLAS_URI")
+else:
+    MONGO_URI = os.getenv("MONGO_LOCAL_URI")
+
+connect(host=MONGO_URI)
 
 # ------------------------
 # Password validation
