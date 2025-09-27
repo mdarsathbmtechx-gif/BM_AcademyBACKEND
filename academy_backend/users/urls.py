@@ -4,6 +4,7 @@ from .views import (
     login_api,
     google_login_api,
     profile_api,
+    list_users,
     AdminLoginAPIView
 )
 
@@ -13,6 +14,7 @@ urlpatterns = [
     path('login/', login_api, name='user-login'),
     path('google-login/', google_login_api, name='google-login'),
     path('profile/', profile_api, name='profile'),
+    path("auth/list/", list_users, name="user-list"),
 
     # Admin endpoint
     path('admin/login/', AdminLoginAPIView.as_view(), name='admin-login'),

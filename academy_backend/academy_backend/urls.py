@@ -9,7 +9,7 @@ urlpatterns = [
 
     # Users API (signup, login, google-login, profile, admin login)
     path('admin/', admin.site.urls),
-    path('api/users/', include('users.urls')),
+    path('api/', include('users.urls')),
 ]
 
 # Serve media files in development

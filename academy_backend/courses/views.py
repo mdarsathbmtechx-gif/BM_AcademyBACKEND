@@ -118,6 +118,7 @@ class CourseListCreateAPIView(APIView):
 # ----------------------- Course Detail / Update / Delete -----------------------
 class CourseDetailAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [AllowAny]
 
     def get_object(self, pk):
         try:

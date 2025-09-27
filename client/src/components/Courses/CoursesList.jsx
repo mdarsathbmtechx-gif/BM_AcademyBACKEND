@@ -13,7 +13,7 @@ const CoursesList = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await authFetch("http://127.0.0.1:8000/api/courses/");
+        const res = await fetch("http://127.0.0.1:8000/api/courses/"); // 👈 no authFetch
         if (!res.ok) throw new Error("Failed to fetch courses");
         const data = await res.json();
         setCourses(data);
@@ -26,7 +26,8 @@ const CoursesList = () => {
     };
 
     fetchCourses();
-  }, [navigate]);
+  }, []);
+
 
   if (loading) return <p className="text-center py-20 text-gray-500">Loading courses...</p>;
   if (error) return <p className="text-red-500 text-center py-20">Error: {error}</p>;

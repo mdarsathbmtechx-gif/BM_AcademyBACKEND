@@ -16,7 +16,7 @@ export default function CourseDetail() {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const res = await authFetch(`http://127.0.0.1:8000/api/courses/${courseId}/`);
+        const res = await fetch(`http://127.0.0.1:8000/api/courses/${courseId}/`); // 👈 no authFetch
         if (!res.ok) throw new Error("Failed to fetch course details");
         const data = await res.json();
         setCourse(data);
@@ -29,7 +29,8 @@ export default function CourseDetail() {
     };
 
     if (courseId) fetchCourse();
-  }, [courseId, navigate]);
+  }, [courseId]);
+
 
   // ------------------ Loading/Error States ------------------
   if (loading) return <div className="text-center py-20 text-gray-500">Loading course details...</div>;
