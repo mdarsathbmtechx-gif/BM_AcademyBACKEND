@@ -33,7 +33,7 @@ export default function Navbar() {
 
     // Optional: silently refresh profile from backend
     if (token) {
-      fetch("http://127.0.0.1:8000/api/users/profile/", {
+      fetch("${import.meta.env.VITE_BASE_URI}users/profile/", {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => {

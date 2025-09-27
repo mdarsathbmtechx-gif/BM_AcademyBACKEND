@@ -14,7 +14,7 @@ const GoogleAuthButton = () => {
 
         try {
           const res = await axios.post(
-            "http://127.0.0.1:8000/api/auth/google/",
+            "${import.meta.env.VITE_BASE_URI}auth/google/",
             { access_token },
             { headers: { "Content-Type": "application/json" } }
           );

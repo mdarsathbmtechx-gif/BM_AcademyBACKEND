@@ -30,13 +30,13 @@ const Signup = () => {
     try {
       // 1️⃣ Signup
       await axios.post(
-        "http://127.0.0.1:8000/api/users/signup/",
+        "${import.meta.env.VITE_BASE_URI}users/signup/",
         { name, email, phone, password, role: "client" },
         { headers: { "Content-Type": "application/json" } }
       );
 
       // 2️⃣ Auto-login after signup
-      const res = await axios.post("http://127.0.0.1:8000/api/users/login/", {
+      const res = await axios.post("${import.meta.env.VITE_BASE_URI}users/login/", {
         email,
         password,
       });
@@ -55,7 +55,7 @@ const Signup = () => {
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/users/google-login/",
+        "${import.meta.env.VITE_BASE_URI}users/google-login/",
         { token },
         { headers: { "Content-Type": "application/json" } }
       );

@@ -16,7 +16,7 @@ export default function CourseDetail() {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/courses/${courseId}/`); // 👈 no authFetch
+        const res = await fetch(`${import.meta.env.VITE_BASE_URI}courses/${courseId}/`); // 👈 no authFetch
         if (!res.ok) throw new Error("Failed to fetch course details");
         const data = await res.json();
         setCourse(data);
@@ -73,7 +73,7 @@ export default function CourseDetail() {
     try {
       // 1️⃣ Create order
       const orderRes = await authFetch(
-        "http://127.0.0.1:8000/api/courses/create_order/",
+        "${import.meta.env.VITE_BASE_URI}courses/create_order/",
         {
           method: "POST",
           body: JSON.stringify({ course_id: courseId }),
@@ -93,7 +93,7 @@ export default function CourseDetail() {
         handler: async function (response) {
           try {
             const verifyRes = await authFetch(
-              "http://127.0.0.1:8000/api/courses/confirm_payment/",
+              "${import.meta.env.VITE_BASE_URI}courses/confirm_payment/",
               {
                 method: "POST",
                 body: JSON.stringify({

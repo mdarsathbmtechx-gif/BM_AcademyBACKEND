@@ -20,7 +20,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://127.0.0.1:8000/api/users/login/", {
+      const res = await axios.post("${import.meta.env.VITE_BASE_URI}users/login/", {
         email,
         password,
       });
@@ -39,7 +39,7 @@ const Login = () => {
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/users/google-login/",
+        "${import.meta.env.VITE_BASE_URI}users/google-login/",
         { token },
         { headers: { "Content-Type": "application/json" } }
       );

@@ -23,7 +23,7 @@ const WelcomeBanner = () => {
     });
 
     axios
-      .get("http://127.0.0.1:8000/api/banners/")
+      .get("${import.meta.env.VITE_BASE_URI}banners/")
       .then((res) => setBanners(res.data))
       .catch((err) => console.error("Error fetching banners:", err));
   }, []);

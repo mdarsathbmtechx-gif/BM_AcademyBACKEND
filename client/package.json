@@ -31,7 +31,7 @@
     "slick-carousel": "^1.8.1",
     "swiper": "^11.2.10",
     "tailwindcss": "^4.1.12",
-    "tsparticles": "^3.9.1",
+    "tsparticles": "^2.12.0",
     "typed.js": "^2.1.0"
   },
   "devDependencies": {

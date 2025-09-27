@@ -13,7 +13,7 @@ const CoursesList = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/courses/"); // 👈 no authFetch
+        const res = await fetch("${import.meta.env.VITE_BASE_URI}courses/"); // 👈 no authFetch
         if (!res.ok) throw new Error("Failed to fetch courses");
         const data = await res.json();
         setCourses(data);

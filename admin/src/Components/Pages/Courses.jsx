@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useAuthFetch } from "../../utils/authFetch";
 
-const apiUrl = "http://127.0.0.1:8000/api/courses/";
+// ✅ Fixed API URL: ensure proper slash
+const apiUrl = `${import.meta.env.VITE_BASE_URI}/courses/`;
 
 export default function Courses() {
   const authFetch = useAuthFetch(); // secure fetch with admin token
@@ -27,11 +28,24 @@ export default function Courses() {
     try {
       setLoadingCourses(true);
       const res = await authFetch(apiUrl);
+
+      // Check for JSON response
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        throw new Error(`Invalid JSON response from server: ${text}`);
+      }
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Failed to fetch courses");
+      }
+
       const data = await res.json();
       setCourses(data);
     } catch (err) {
       console.error("Error fetching courses:", err);
-      alert("Error fetching courses!");
+      alert("Error fetching courses! Check console.");
     } finally {
       setLoadingCourses(false);
     }
@@ -90,14 +104,16 @@ export default function Courses() {
       if (imageFile) formData.append("image", imageFile);
       modules.forEach((m) => formData.append("modules", m.name));
 
-      if (editingId) {
-        await authFetch(`${apiUrl}${editingId}/`, { method: "PUT", body: formData });
-        alert("Course updated successfully!");
-      } else {
-        await authFetch(apiUrl, { method: "POST", body: formData });
-        alert("Course added successfully!");
+      const url = editingId ? `${apiUrl}${editingId}/` : apiUrl;
+      const method = editingId ? "PUT" : "POST";
+
+      const res = await authFetch(url, { method, body: formData });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Failed to save course");
       }
 
+      alert(editingId ? "Course updated successfully!" : "Course added successfully!");
       resetForm();
       fetchCourses();
     } catch (err) {
@@ -128,7 +144,11 @@ export default function Courses() {
     if (!window.confirm("Are you sure you want to delete this course?")) return;
 
     try {
-      await authFetch(`${apiUrl}${id}/`, { method: "DELETE" });
+      const res = await authFetch(`${apiUrl}${id}/`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Failed to delete course");
+      }
       alert("Course deleted successfully!");
       fetchCourses();
     } catch (err) {

@@ -13,37 +13,46 @@ export default function AdminLogin({ onLogin }) {
     setError("");
 
     try {
-      // 1️⃣ Send login request
-      const res = await fetch("http://127.0.0.1:8000/api/users/admin/login/", {
+      // Construct URL safely
+      const loginUrl = `${import.meta.env.VITE_BASE_URI}/users/admin/login/`;
+      console.log("Admin login URL:", loginUrl);
+
+      // Send login request
+      const res = await fetch(loginUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      let data;
+      const contentType = res.headers.get("content-type");
 
-      if (res.ok) {
-        const accessToken = data.access;
-        const userRole = data.user.role;
-
-        // 2️⃣ Check if user is admin
-        if (userRole !== "admin") {
-          throw new Error("You are not authorized as admin");
-        }
-
-        // 3️⃣ Save token & user info in localStorage
-        localStorage.setItem("access_token", accessToken);
-        localStorage.setItem("user_email", data.user.email);
-        localStorage.setItem("user_role", userRole);
-
-        // 4️⃣ Notify parent app
-        if (onLogin) onLogin();
-
-        // 5️⃣ Redirect to admin dashboard
-        navigate("/dashboard", { replace: true });
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
       } else {
-        setError(data.detail || "Login failed");
+        const text = await res.text();
+        throw new Error(text || "Server returned an invalid response");
       }
+
+      if (!res.ok) {
+        throw new Error(data.detail || "Login failed");
+      }
+
+      // Check user role
+      if (data.user.role !== "admin") {
+        throw new Error("You are not authorized as admin");
+      }
+
+      // Save token & user info in localStorage
+      localStorage.setItem("access_token", data.access);
+      localStorage.setItem("user_email", data.user.email);
+      localStorage.setItem("user_role", data.user.role);
+
+      // Notify parent app
+      if (onLogin) onLogin();
+
+      // Redirect to admin dashboard
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error("Login error:", err);
       setError(err.message || "Network error. Please try again.");
