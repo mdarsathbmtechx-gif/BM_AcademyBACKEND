@@ -15,6 +15,19 @@ from rest_framework.exceptions import NotFound
 import os
 import json
 
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+class BannerListAPIView(APIView):
+    def get(self, request):
+        banners = [
+            {"title": "Banner 1", "description": "Desc 1", "image": "url1"},
+            {"title": "Banner 2", "description": "Desc 2", "image": "url2"},
+        ]
+        return Response(banners)
+
+
 # ----------------------- Course List / Create -----------------------
 class CourseListCreateAPIView(APIView):
     permission_classes = [AllowAny]

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { FaUserCircle } from "react-icons/fa";
 import Logo from "../../assets/img/Bm Academy logo .png";
@@ -22,34 +22,46 @@ export default function Navbar() {
   ];
 
   // ---------- Check login state ----------
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  const userData = localStorage.getItem("user");
 
-    if (token && userData) {
-      setIsLoggedIn(true);
-      setUser(JSON.parse(userData));
-    }
+  if (token && userData) {
+    setIsLoggedIn(true);
+    setUser(JSON.parse(userData));
 
-    // Optional: silently refresh profile from backend
-    if (token) {
-      fetch("${import.meta.env.VITE_BASE_URI}users/profile/", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Unauthorized");
+    fetch(`${import.meta.env.VITE_BASE_URI}users/profile/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          if (!res.ok) throw await res.json();
           return res.json();
-        })
-        .then((data) => setUser(data))
-        .catch((err) => {
-          console.log("Profile refresh failed:", err.message);
-          // Do NOT log out user, keep Navbar showing logged-in state
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, []);
+        } else {
+          const text = await res.text();
+          throw new Error("Non-JSON response: " + text);
+        }
+      })
+      .then((data) => {
+        setUser(data);
+        setIsLoggedIn(true);
+      })
+      .catch((err) => {
+        console.log("Profile refresh failed:", err.detail || err.message || err);
+
+        // Token invalid or expired → clear localStorage & reset state
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setIsLoggedIn(false);
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
+  } else {
+    setLoading(false);
+  }
+}, []);
+
 
   // Listen for login/logout from other tabs
   useEffect(() => {

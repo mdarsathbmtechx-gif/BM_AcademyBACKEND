@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import CourseListCreateAPIView, CourseRetrieveUpdateDeleteView, CourseDetailAPIView
+from .views import CourseListCreateAPIView, CourseRetrieveUpdateDeleteView, CourseDetailAPIView, BannerListAPIView
 from .views import create_order, confirm_payment
 
 
@@ -7,6 +7,7 @@ urlpatterns = [
     path('courses/', CourseListCreateAPIView.as_view(), name='api-course-list-create'),  # list endpoint
     path('courses/<str:pk>/', CourseDetailAPIView.as_view(), name='api-course-detail'),  
     path('courses/<str:pk>/', CourseRetrieveUpdateDeleteView.as_view(), name='course-detail'),
+    path('banners/', BannerListAPIView.as_view(), name='banner-list'),
     path("api/auth/", include("users.urls")),
 
     # FIXED ROUTES

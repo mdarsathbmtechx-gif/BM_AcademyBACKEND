@@ -1,3 +1,4 @@
+// src/components/Authentication/Signup.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
@@ -10,8 +11,9 @@ const Signup = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Centralized function to store token & user
+  // Centralized function to store token & user info
   const storeUserData = (token, user) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
@@ -27,35 +29,40 @@ const Signup = () => {
       return;
     }
 
+    setLoading(true);
     try {
       // 1️⃣ Signup
       await axios.post(
-        "${import.meta.env.VITE_BASE_URI}users/signup/",
+        `${import.meta.env.VITE_BASE_URI}users/signup/`,
         { name, email, phone, password, role: "client" },
         { headers: { "Content-Type": "application/json" } }
       );
 
       // 2️⃣ Auto-login after signup
-      const res = await axios.post("${import.meta.env.VITE_BASE_URI}users/login/", {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        `${import.meta.env.VITE_BASE_URI}users/login/`,
+        { email, password },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
       storeUserData(res.data.token, res.data.user);
       navigate("/dashboard/student");
     } catch (err) {
       console.error(err.response?.data || err);
       alert(err.response?.data?.error || "Signup failed!");
+    } finally {
+      setLoading(false);
     }
   };
 
   // ----------------- Google Signup/Login -----------------
   const handleGoogleLogin = async (credentialResponse) => {
     const token = credentialResponse.credential;
+    setLoading(true);
 
     try {
       const res = await axios.post(
-        "${import.meta.env.VITE_BASE_URI}users/google-login/",
+        `${import.meta.env.VITE_BASE_URI}users/google-login/`,
         { token },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -63,8 +70,10 @@ const Signup = () => {
       storeUserData(res.data.token || res.data.access, res.data.user);
       navigate("/dashboard/student");
     } catch (err) {
-      console.error("Google signup failed:", err.response?.data || err.message);
-      alert("Google signup failed!");
+      console.error("Google signup/login failed:", err.response?.data || err.message);
+      alert("Google signup/login failed!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -117,17 +126,27 @@ const Signup = () => {
           />
           <button
             type="submit"
-            className="w-full py-3 bg-yellow-500 text-black font-bold rounded-xl"
+            disabled={loading}
+            className={`w-full py-3 bg-yellow-500 text-black font-bold rounded-xl ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            Sign Up
+            {loading ? "Signing up..." : "Sign Up"}
           </button>
         </form>
 
+        {/* Divider */}
+        <div className="flex items-center my-4">
+          <hr className="flex-grow border-t border-gray-300" />
+          <span className="mx-2 text-gray-500">OR</span>
+          <hr className="flex-grow border-t border-gray-300" />
+        </div>
+
         {/* Google signup/login */}
-        <div className="mt-4 flex justify-center">
+        <div className="flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleLogin}
-            onError={() => console.log("Google signup failed")}
+            onError={() => alert("Google signup/login failed")}
           />
         </div>
 

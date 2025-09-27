@@ -7,24 +7,27 @@ export default function StudentDashboard() {
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in
-  const token = localStorage.getItem("token"); // use Navbar token key
+  const token = localStorage.getItem("token");
   if (!token) {
-    return <Navigate to="/login" />; // Redirect if not logged in
+    return <Navigate to="/login" />;
   }
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         setLoading(true);
-        const res = await API.get("courses/");
-        setCourses(res.data);
 
-        // Optional: fetch enrolled courses
+        // Fetch all courses
+        const res = await API.get("courses/");
+        setCourses(Array.isArray(res.data) ? res.data : []);
+
+        // Fetch enrolled courses
         const enrolledRes = await API.get("enrollments/");
-        setEnrolledCourses(enrolledRes.data);
+        setEnrolledCourses(Array.isArray(enrolledRes.data) ? enrolledRes.data : []);
       } catch (err) {
         console.error(err.response?.data || err);
+        setCourses([]);
+        setEnrolledCourses([]);
       } finally {
         setLoading(false);
       }
@@ -37,8 +40,9 @@ export default function StudentDashboard() {
     try {
       await API.post("enrollments/", { course: courseId });
       alert("Enrolled successfully!");
+
       const enrolledRes = await API.get("enrollments/");
-      setEnrolledCourses(enrolledRes.data);
+      setEnrolledCourses(Array.isArray(enrolledRes.data) ? enrolledRes.data : []);
     } catch (err) {
       console.error(err.response?.data || err);
       alert("Enrollment failed!");
@@ -50,7 +54,6 @@ export default function StudentDashboard() {
 
   return (
     <div className="mt-20 min-h-screen bg-gray-50">
-      {/* Optional: Navbar placeholder */}
       <header className="bg-white shadow p-6 flex justify-between items-center sticky top-0 z-20">
         <h1 className="text-2xl font-bold text-gray-800">BM Academy Dashboard</h1>
       </header>

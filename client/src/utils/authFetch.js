@@ -1,10 +1,9 @@
 // src/utils/authFetch.js
-
 export const authFetch = async (url, options = {}) => {
-  const token = localStorage.getItem("access_token");
+  const token = localStorage.getItem("token"); // match Navbar/login storage
 
   if (!token) {
-    // Redirect to login if no token
+    localStorage.removeItem("user");
     window.location.href = "/login";
     throw new Error("User not logged in");
   }
@@ -19,9 +18,16 @@ export const authFetch = async (url, options = {}) => {
   });
 
   if (res.status === 401) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.dispatchEvent(new Event("storage")); // update Navbar
     window.location.href = "/login";
-    throw new Error("Unauthorized");
+    throw new Error("Unauthorized or invalid token");
   }
 
-  return res;
+  try {
+    return await res.json();
+  } catch (err) {
+    throw new Error("Failed to parse JSON");
+  }
 };

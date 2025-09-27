@@ -1,3 +1,4 @@
+// src/components/Authentication/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
@@ -7,48 +8,57 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Centralized function to store token & user
+  // Centralized function to store token & user info
   const storeUserData = (token, user) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
-    window.dispatchEvent(new Event("storage")); // update Navbar immediately
+    // Trigger Navbar update
+    window.dispatchEvent(new Event("storage"));
   };
 
-  // ----------------- Normal Email/Password Login -----------------
+  // ----------------- Email/Password Login -----------------
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      const res = await axios.post("${import.meta.env.VITE_BASE_URI}users/login/", {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        `${import.meta.env.VITE_BASE_URI}users/login/`,
+        { email, password },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
       storeUserData(res.data.token, res.data.user);
       navigate("/dashboard/student");
     } catch (err) {
       console.error(err.response?.data || err);
       alert(err.response?.data?.error || "Invalid credentials");
+    } finally {
+      setLoading(false);
     }
   };
 
   // ----------------- Google Login -----------------
   const handleGoogleLogin = async (credentialResponse) => {
     const token = credentialResponse.credential;
+    setLoading(true);
 
     try {
       const res = await axios.post(
-        "${import.meta.env.VITE_BASE_URI}users/google-login/",
+        `${import.meta.env.VITE_BASE_URI}users/google-login/`,
         { token },
         { headers: { "Content-Type": "application/json" } }
       );
 
-      storeUserData(res.data.token || res.data.access, res.data.user);
+      storeUserData(res.data.access || res.data.token, res.data.user);
       navigate("/dashboard/student");
     } catch (err) {
       console.error("Google login failed:", err.response?.data || err.message);
       alert("Google login failed!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,17 +87,27 @@ const Login = () => {
           />
           <button
             type="submit"
-            className="w-full py-3 bg-yellow-500 text-black font-bold rounded-xl"
+            disabled={loading}
+            className={`w-full py-3 bg-yellow-500 text-black font-bold rounded-xl ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
+        {/* Divider */}
+        <div className="flex items-center my-4">
+          <hr className="flex-grow border-t border-gray-300" />
+          <span className="mx-2 text-gray-500">OR</span>
+          <hr className="flex-grow border-t border-gray-300" />
+        </div>
+
         {/* Google login */}
-        <div className="mt-4 flex justify-center">
+        <div className="flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleLogin}
-            onError={() => console.log("Google login failed")}
+            onError={() => alert("Google login failed")}
           />
         </div>
 
