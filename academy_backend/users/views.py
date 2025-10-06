@@ -169,13 +169,13 @@ from users.models import User
 
 def list_users(request):
     if request.method == "GET":
-        users = User.objects.all()  # Fetch all users
+        users = User.objects.all()  
         users_list = [
             {
                 "id": str(user.id),
-                "name": getattr(user, "name", ""),  # Added name
+                "name": getattr(user, "name", ""),
                 "email": user.email,
-                "phone": getattr(user, "phone", ""),  # Phone number
+                "phone": getattr(user, "phone", ""),
             }
             for user in users
         ]

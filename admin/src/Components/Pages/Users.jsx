@@ -9,10 +9,18 @@ const Users = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("access_token");
-        const res = await axios.get(`${import.meta.env.VITE_BASE_URI}auth/list/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+
+        // ✅ Get token stored after signup/login
+        const token = localStorage.getItem("token");
+
+        // ✅ Correct endpoint (matches Django's api/users/list/)
+        const res = await axios.get(
+          `${import.meta.env.VITE_BASE_URI}users/list/`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
         setUsers(res.data);
       } catch (err) {
         console.error("Error fetching users:", err.response?.data || err);
