@@ -164,14 +164,17 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
-    "https://bm-academy.vercel.app",
+    "https://bmacademyclient.vercel.app",
+    "https://bmacademyadmin.vercel.app",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True  # For dev only
+CORS_ALLOW_ALL_ORIGINS = False  # For dev only
 
 # Optional: CSRF trusted origins for API
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
+    "https://bmacademyclient.vercel.app",
+    "https://bmacademyadmin.vercel.app",
 ]
 
 # ------------------------
