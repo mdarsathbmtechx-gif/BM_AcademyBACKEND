@@ -1,11 +1,13 @@
-// src/components/Authentication/Signup.jsx
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { AuthContext } from "../../Context/AuthContext";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { setAuth } = useContext(AuthContext);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -13,39 +15,34 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Centralized function to store token & user info
   const storeUserData = (token, user) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
-    window.dispatchEvent(new Event("storage")); // update Navbar immediately
+    setAuth({ isAuthenticated: true, token, user });
+    window.dispatchEvent(new Event("storage"));
   };
 
   // ----------------- Normal Signup -----------------
   const handleSignup = async (e) => {
     e.preventDefault();
-
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
+    if (password !== confirmPassword) return alert("Passwords do not match!");
 
     setLoading(true);
     try {
-      // 1️⃣ Signup
       await axios.post(
         `${import.meta.env.VITE_BASE_URI}users/signup/`,
         { name, email, phone, password, role: "client" },
         { headers: { "Content-Type": "application/json" } }
       );
 
-      // 2️⃣ Auto-login after signup
+      // Auto-login
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URI}users/login/`,
         { email, password },
         { headers: { "Content-Type": "application/json" } }
       );
 
-      storeUserData(res.data.token, res.data.user);
+      storeUserData(res.data.access, res.data.user);
       navigate("/dashboard/student");
     } catch (err) {
       console.error(err.response?.data || err);
@@ -57,9 +54,10 @@ const Signup = () => {
 
   // ----------------- Google Signup/Login -----------------
   const handleGoogleLogin = async (credentialResponse) => {
-    const token = credentialResponse.credential;
-    setLoading(true);
+    const token = credentialResponse?.credential;
+    if (!token) return alert("Google credential missing!");
 
+    setLoading(true);
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URI}users/google-login/`,
@@ -67,11 +65,11 @@ const Signup = () => {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      storeUserData(res.data.token || res.data.access, res.data.user);
+      storeUserData(res.data.access, res.data.user);
       navigate("/dashboard/student");
     } catch (err) {
       console.error("Google signup/login failed:", err.response?.data || err.message);
-      alert("Google signup/login failed!");
+      alert(err.response?.data?.error || "Google signup/login failed!");
     } finally {
       setLoading(false);
     }
@@ -82,7 +80,6 @@ const Signup = () => {
       <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
 
-        {/* Normal signup form */}
         <form onSubmit={handleSignup} className="space-y-4">
           <input
             type="text"
@@ -135,14 +132,12 @@ const Signup = () => {
           </button>
         </form>
 
-        {/* Divider */}
         <div className="flex items-center my-4">
           <hr className="flex-grow border-t border-gray-300" />
           <span className="mx-2 text-gray-500">OR</span>
           <hr className="flex-grow border-t border-gray-300" />
         </div>
 
-        {/* Google signup/login */}
         <div className="flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleLogin}

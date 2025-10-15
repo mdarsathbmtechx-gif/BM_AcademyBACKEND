@@ -1,3 +1,4 @@
+// src/components/home/Navbar.jsx
 import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { FaUserCircle } from "react-icons/fa";
@@ -22,48 +23,46 @@ export default function Navbar() {
   ];
 
   // ---------- Check login state ----------
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  const userData = localStorage.getItem("user");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
 
-  if (token && userData) {
-    setIsLoggedIn(true);
-    setUser(JSON.parse(userData));
+    if (token && userData) {
+      setIsLoggedIn(true);
+      setUser(JSON.parse(userData));
 
-    fetch(`${import.meta.env.VITE_BASE_URI}users/profile/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (res) => {
-        const contentType = res.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          if (!res.ok) throw await res.json();
-          return res.json();
-        } else {
-          const text = await res.text();
-          throw new Error("Non-JSON response: " + text);
-        }
+      // Optional: refresh profile data
+      fetch(`${import.meta.env.VITE_BASE_URI}users/profile/`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .then((data) => {
-        setUser(data);
-        setIsLoggedIn(true);
-      })
-      .catch((err) => {
-        console.log("Profile refresh failed:", err.detail || err.message || err);
+        .then(async (res) => {
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            if (!res.ok) throw await res.json();
+            return res.json();
+          } else {
+            const text = await res.text();
+            throw new Error("Non-JSON response: " + text);
+          }
+        })
+        .then((data) => {
+          setUser(data);
+          setIsLoggedIn(true);
+        })
+        .catch(() => {
+          // Invalid token → logout
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setIsLoggedIn(false);
+          setUser(null);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
-        // Token invalid or expired → clear localStorage & reset state
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        setIsLoggedIn(false);
-        setUser(null);
-      })
-      .finally(() => setLoading(false));
-  } else {
-    setLoading(false);
-  }
-}, []);
-
-
-  // Listen for login/logout from other tabs
+  // Listen for login/logout in other tabs
   useEffect(() => {
     const handleStorageChange = () => {
       const token = localStorage.getItem("token");
@@ -104,7 +103,7 @@ useEffect(() => {
     </>
   );
 
-  if (loading) return null; // Prevent flashing login/signup while checking token
+  if (loading) return null;
 
   return (
     <nav className="bg-white shadow-md fixed w-full top-0 left-0 z-50">
@@ -164,7 +163,6 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Mobile Menu Button */}
         <button
           className="md:hidden text-gray-700 focus:outline-none"
           onClick={() => setIsOpen(true)}
@@ -173,13 +171,13 @@ useEffect(() => {
         </button>
       </div>
 
+      {/* Mobile Menu */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/60 z-40 md:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
-
       <div
         className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
           isOpen ? "translate-x-0" : "translate-x-full"
@@ -209,10 +207,7 @@ useEffect(() => {
           {isLoggedIn ? (
             <div className="flex flex-col space-y-2">
               <Link to="/profile" onClick={() => setIsOpen(false)}>
-                <FaUserCircle
-                  size={30}
-                  className="text-gray-700 hover:text-yellow-500"
-                />
+                <FaUserCircle size={30} className="text-gray-700 hover:text-yellow-500" />
               </Link>
               <button
                 onClick={() => {

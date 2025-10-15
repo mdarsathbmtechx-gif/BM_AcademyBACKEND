@@ -1,13 +1,19 @@
+// src/Routes/PrivateRoute.jsx
 import { Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
-export default function PrivateRoute({ children, role }) {
-  const userRole = localStorage.getItem("role");
-  const token = localStorage.getItem("access_token");
+export default function PrivateRoute({ children }) {
+  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
 
-  // Redirect to login if token missing or role mismatch
-  if (!token || userRole !== role) {
-    return <Navigate to="/login" />;
-  }
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    setToken(t);
+    setLoading(false);
+  }, []);
+
+  if (loading) return null; // wait until we check token
+  if (!token) return <Navigate to="/login" replace />;
 
   return children;
 }

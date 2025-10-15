@@ -1,7 +1,7 @@
 // src/components/Courses/CoursesList.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { authFetch } from "../../utils/authFetch"; // ✅ shared helper for auth requests
+import { authFetch } from "../../utils/authFetch";
 
 const CoursesList = () => {
   const [courses, setCourses] = useState([]);
@@ -12,35 +12,11 @@ const CoursesList = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${import.meta.env.VITE_BASE_URI}courses/`, {
-          headers: token
-            ? { Authorization: `Bearer ${token}` }
-            : {},
-        });
-
-        const contentType = res.headers.get("content-type");
-
-        if (!res.ok) {
-          let errMsg = `Failed to fetch courses (${res.status})`;
-          if (contentType && contentType.includes("application/json")) {
-            const errData = await res.json();
-            errMsg = errData.error || JSON.stringify(errData);
-          }
-          throw new Error(errMsg);
-        }
-
-        if (!contentType || !contentType.includes("application/json")) {
-          const text = await res.text();
-          throw new Error("Non-JSON response: " + text);
-        }
-
-        const data = await res.json();
-
+        setLoading(true);
+        const data = await authFetch(`${import.meta.env.VITE_BASE_URI}courses/`);
         if (!Array.isArray(data)) {
           throw new Error("Courses response is not an array");
         }
-
         setCourses(data);
       } catch (err) {
         console.error("Courses fetch error:", err);
@@ -60,7 +36,7 @@ const CoursesList = () => {
     <div className="flex flex-wrap gap-5 justify-center">
       {courses.map((course) => (
         <div
-          key={course._id?.$oid || course.id || course._id} // fallback if structure varies
+          key={course._id?.$oid || course.id || course._id} // fallback
           className="border p-4 rounded-lg w-64 cursor-pointer shadow hover:shadow-lg transition-transform transform hover:-translate-y-1"
           onClick={() => navigate(`${course._id?.$oid || course.id || course._id}`)}
         >

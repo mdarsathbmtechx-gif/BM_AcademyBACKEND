@@ -10,6 +10,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 import os
 
 PORT = int(os.environ.get("PORT", 8000))
+from dotenv import load_dotenv
+import os
+load_dotenv()  # loads .env
+GOOGLE_CLIENT_ID = os.environ.get("VITE_GOOGLE_CLIENT_ID")
+
 
 
 # ------------------------

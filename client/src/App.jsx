@@ -42,7 +42,14 @@ export const App = () => {
               <Routes>
                 <Route path="/" element={<HomeRoutes />} />
                 <Route path="/about" element={<Aboutroutes />} />
-                <Route path="/courses/*" element={<Coursesroutes />} />
+<Route
+  path="/courses/*"
+  element={
+    <PrivateRoute>
+      <Coursesroutes />
+    </PrivateRoute>
+  }
+/>
                 <Route path="/sact" element={<SACTroutes />} />
                 <Route path="/sat" element={<SATroutes />} />
                 <Route path="/contacts" element={<Contactsroutes />} />
@@ -69,12 +76,6 @@ export const App = () => {
 };
 
 
-
-import { GoogleOAuthProvider } from "@react-oauth/google";
-
-<GoogleOAuthProvider clientId="281995264661-d17guc355o5thv4q7r5ukpn0dgggcfss.apps.googleusercontent.com">
-  <App />
-</GoogleOAuthProvider>
 
 
 

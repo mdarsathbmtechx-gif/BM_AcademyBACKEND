@@ -1,20 +1,35 @@
-// src/components/Authentication/Login.jsx
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { AuthContext } from "../../Context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { auth, setAuth } = useContext(AuthContext);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Centralized function to store token & user info
-  const storeUserData = (token, user) => {
-    localStorage.setItem("token", token);
+  // Redirect if already logged in
+  useEffect(() => {
+    if (auth.isAuthenticated) navigate("/dashboard/student");
+  }, [auth, navigate]);
+
+  // ----------------- Helper to store tokens -----------------
+  const storeUserData = (accessToken, refreshToken, user) => {
+    localStorage.setItem("token", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("user", JSON.stringify(user));
-    // Trigger Navbar update
+
+    setAuth({
+      isAuthenticated: true,
+      token: accessToken,
+      refreshToken,
+      user,
+    });
+
     window.dispatchEvent(new Event("storage"));
   };
 
@@ -30,7 +45,8 @@ const Login = () => {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      storeUserData(res.data.token, res.data.user);
+      // Store both access & refresh tokens
+      storeUserData(res.data.access, res.data.refresh, res.data.user);
       navigate("/dashboard/student");
     } catch (err) {
       console.error(err.response?.data || err);
@@ -42,9 +58,10 @@ const Login = () => {
 
   // ----------------- Google Login -----------------
   const handleGoogleLogin = async (credentialResponse) => {
-    const token = credentialResponse.credential;
-    setLoading(true);
+    const token = credentialResponse?.credential;
+    if (!token) return alert("Google credential missing!");
 
+    setLoading(true);
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URI}users/google-login/`,
@@ -52,11 +69,11 @@ const Login = () => {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      storeUserData(res.data.access || res.data.token, res.data.user);
+      storeUserData(res.data.access, res.data.refresh, res.data.user);
       navigate("/dashboard/student");
     } catch (err) {
       console.error("Google login failed:", err.response?.data || err.message);
-      alert("Google login failed!");
+      alert(err.response?.data?.error || "Google login failed!");
     } finally {
       setLoading(false);
     }
@@ -67,7 +84,6 @@ const Login = () => {
       <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
 
-        {/* Email/password login form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
@@ -96,14 +112,12 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Divider */}
         <div className="flex items-center my-4">
           <hr className="flex-grow border-t border-gray-300" />
           <span className="mx-2 text-gray-500">OR</span>
           <hr className="flex-grow border-t border-gray-300" />
         </div>
 
-        {/* Google login */}
         <div className="flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleLogin}

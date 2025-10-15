@@ -81,6 +81,9 @@ def login_api(request):
 
 
 # ----------------- Google Login -----------------
+from django.conf import settings
+
+
 @csrf_exempt
 def google_login_api(request):
     if request.method != "POST":
@@ -88,17 +91,30 @@ def google_login_api(request):
 
     body = json.loads(request.body)
     token = body.get("token")
+    if not token:
+        return JsonResponse({"error": "Token missing"}, status=400)
 
     try:
-        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), CLIENT_ID)
+        idinfo = id_token.verify_oauth2_token(
+            token,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID  # Must match frontend client ID
+        )
+
         email = idinfo.get("email")
+        name = idinfo.get("name", "Unknown")  # Google name
         if not email:
             return JsonResponse({"error": "Email not found in token"}, status=400)
 
-        # Check if user exists
-        user = User.objects(email=email).first()
+        # Get or create user
+        user = User.objects.filter(email=email).first()
         if not user:
-            user = User(email=email, role="client")
+            user = User(
+                email=email,
+                name=name,
+                role="client",
+                phone="0000000000"  # dummy phone
+            )
             user.set_password("google_dummy_password")
             user.save()
 
@@ -107,12 +123,15 @@ def google_login_api(request):
             "access": jwt_token,
             "user": {
                 "email": user.email,
+                "name": user.name,
                 "role": user.role
             }
         })
+
+    except ValueError as e:
+        return JsonResponse({"error": f"Invalid token: {str(e)}"}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
-
 
 # ----------------- Profile -----------------
 from .decorators import jwt_required
