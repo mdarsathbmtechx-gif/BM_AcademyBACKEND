@@ -2,27 +2,35 @@ import os
 from pathlib import Path
 from mongoengine import connect
 from datetime import timedelta
+from dotenv import load_dotenv
 
 # ------------------------
 # Base directory
 # ------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
-import os
 
+# ------------------------
+# Environment file selection
+# ------------------------
+ENV_FILE = os.environ.get("ENV_FILE", ".env_local")  # default to local
+load_dotenv(BASE_DIR / ENV_FILE)
+
+# ------------------------
+# PORT (for Render)
+# ------------------------
 PORT = int(os.environ.get("PORT", 8000))
-from dotenv import load_dotenv
-import os
-load_dotenv()  # loads .env
-GOOGLE_CLIENT_ID = os.environ.get("VITE_GOOGLE_CLIENT_ID")
 
-
+# ------------------------
+# Google OAuth
+# ------------------------
+GOOGLE_CLIENT_ID = os.getenv("VITE_GOOGLE_CLIENT_ID")
 
 # ------------------------
 # SECURITY
 # ------------------------
-SECRET_KEY = "your-secret-key-here"
-DEBUG = True
-ALLOWED_HOSTS = []
+SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-local-secret")
+DEBUG = os.getenv("DEBUG", "True") == "True"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # ------------------------
 # Installed apps
@@ -36,12 +44,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     # Third-party apps
-    'corsheaders',          # for CORS
-    'rest_framework',       # Django REST Framework
+    'corsheaders',
+    'rest_framework',
 
     # Your apps
-    'courses',              # MongoEngine models for courses
-    'users',                # Optional: SQL auth / user management
+    'courses',
+    'users',
 ]
 
 # ------------------------
@@ -64,7 +72,6 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'academy_backend.urls'
 WSGI_APPLICATION = 'academy_backend.wsgi.application'
 
-
 # ------------------------
 # Templates
 # ------------------------
@@ -83,19 +90,6 @@ TEMPLATES = [
         },
     },
 ]
-
-# ------------------------
-# Database (for Django auth/admin)
-# ------------------------
-import os
-from pathlib import Path
-from dotenv import load_dotenv
-from mongoengine import connect
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Load environment variables
-load_dotenv()
 
 # ------------------------
 # Database (for Django auth/admin)
@@ -164,28 +158,33 @@ REST_FRAMEWORK = {
     ),
 }
 
-
 # ------------------------
 # CORS (for React frontend)
 # ------------------------
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
+    "https://bm-academy.vercel.app",
 ]
 
-
 CORS_ALLOW_ALL_ORIGINS = True  # For dev only
-
 
 # Optional: CSRF trusted origins for API
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+# ------------------------
+# JWT settings
+# ------------------------
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # adjust as needed
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-RAZORPAY_KEY_ID="rzp_test_Gnz2IQNWIUgqNb"
-RAZORPAY_KEY_SECRET="kypr0h5ArQMOkO7q3tecAlOe"
+# ------------------------
+# Razorpay
+# ------------------------
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")

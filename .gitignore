@@ -40,3 +40,20 @@ Thumbs.db
 node_modules/
 build/
 dist/
+
+
+# Django
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+.env_local
+.env_prod
+
+# React
+client/.env
+client/.env_prod
+admin/.env
+admin/.env_prod
+node_modules/
+dist/
