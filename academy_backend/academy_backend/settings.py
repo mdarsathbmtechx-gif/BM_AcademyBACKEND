@@ -30,7 +30,12 @@ GOOGLE_CLIENT_ID = os.getenv("VITE_GOOGLE_CLIENT_ID")
 # ------------------------
 SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-local-secret")
 DEBUG = os.getenv("DEBUG", "True") == "True"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
+# ✅ Include your Render backend domain here also
+ALLOWED_HOSTS = os.getenv(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1,bm-academy-backend.onrender.com"
+).split(",")
 
 # ------------------------
 # Installed apps
@@ -46,7 +51,6 @@ INSTALLED_APPS = [
     # Third-party apps
     'corsheaders',
     'rest_framework',
-
     # Your apps
     'courses',
     'users',
@@ -56,7 +60,7 @@ INSTALLED_APPS = [
 # Middleware
 # ------------------------
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # must be at the top
+    'corsheaders.middleware.CorsMiddleware',  # must be first
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -103,9 +107,9 @@ DATABASES = {
 }
 
 # ------------------------
-# MongoDB connection (for Courses via MongoEngine)
+# MongoDB connection
 # ------------------------
-MONGO_ENV = os.getenv("MONGO_ENV", "local")  # default = local
+MONGO_ENV = os.getenv("MONGO_ENV", "local")
 
 if MONGO_ENV == "atlas":
     MONGO_URI = os.getenv("MONGO_ATLAS_URI")
@@ -163,29 +167,35 @@ REST_FRAMEWORK = {
 }
 
 # ------------------------
-# CORS (for React frontend)
+# ✅ CORS Configuration
 # ------------------------
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://bmacademyclient.vercel.app",
-    "https://bmacademyadmin.vercel.app",
-]
+# ✅ LOCAL CORS CONFIG (ONLY FOR LOCAL TESTING)
+# ------------------------
+CORS_ALLOW_ALL_ORIGINS = False
 
-CORS_ALLOW_ALL_ORIGINS = False  # For dev only
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:5174"]
 
-# Optional: CSRF trusted origins for API
+
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
-    "https://bmacademyclient.vercel.app",
-    "https://bmacademyadmin.vercel.app",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    "DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT",
+]
+
+CORS_ALLOW_HEADERS = [
+    "accept", "accept-encoding", "authorization", "content-type",
+    "dnt", "origin", "user-agent", "x-csrftoken", "x-requested-with",
 ]
 
 # ------------------------
 # JWT settings
 # ------------------------
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # adjust as needed
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }

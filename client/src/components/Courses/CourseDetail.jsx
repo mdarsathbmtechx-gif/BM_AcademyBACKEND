@@ -1,28 +1,33 @@
 // src/components/Courses/CourseDetail.jsx
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { authFetch } from "../../utils/authFetch"; // ✅ shared helper
+import { useParams } from "react-router-dom";
 
 export default function CourseDetail() {
   const { courseId } = useParams();
-  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const user = JSON.parse(localStorage.getItem("user")) || {};
+  const user = JSON.parse(localStorage.getItem("user")) || null;
+
+  // ------------------ Public fetch ------------------
+  const publicFetch = async (url, options = {}) => {
+    const res = await fetch(url, options);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch: ${res.status}`);
+    }
+    return res.json();
+  };
 
   // ------------------ Fetch course details ------------------
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BASE_URI}courses/${courseId}/`); // 👈 no authFetch
-        if (!res.ok) throw new Error("Failed to fetch course details");
-        const data = await res.json();
+        const data = await publicFetch(`${import.meta.env.VITE_BASE_URI}courses/${courseId}/`);
         setCourse(data);
       } catch (err) {
         console.error(err);
-        setError(err.message);
+        setError(err.message || "Failed to fetch course details");
       } finally {
         setLoading(false);
       }
@@ -30,7 +35,6 @@ export default function CourseDetail() {
 
     if (courseId) fetchCourse();
   }, [courseId]);
-
 
   // ------------------ Loading/Error States ------------------
   if (loading) return <div className="text-center py-20 text-gray-500">Loading course details...</div>;
@@ -66,64 +70,6 @@ export default function CourseDetail() {
       );
     }
     return stars;
-  };
-
-  // ------------------ Enroll Handler ------------------
-  const handleEnroll = async () => {
-    try {
-      // 1️⃣ Create order
-      const orderRes = await authFetch(
-        "${import.meta.env.VITE_BASE_URI}courses/create_order/",
-        {
-          method: "POST",
-          body: JSON.stringify({ course_id: courseId }),
-        }
-      );
-      const orderData = await orderRes.json();
-      if (!orderRes.ok) throw new Error(orderData.error || "Order creation failed");
-
-      // 2️⃣ Razorpay options
-      const options = {
-        key: "rzp_test_Gnz2IQNWIUgqNb",
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "BM Academy",
-        description: course.title,
-        order_id: orderData.order_id,
-        handler: async function (response) {
-          try {
-            const verifyRes = await authFetch(
-              "${import.meta.env.VITE_BASE_URI}courses/confirm_payment/",
-              {
-                method: "POST",
-                body: JSON.stringify({
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_signature: response.razorpay_signature,
-                }),
-              }
-            );
-            const verifyData = await verifyRes.json();
-            if (verifyRes.ok) alert("Payment successful! You are now enrolled.");
-            else alert("Payment failed: " + verifyData.error);
-          } catch (err) {
-            console.error(err);
-            alert("Payment verification failed");
-          }
-        },
-        prefill: {
-          email: user.email || "",
-          contact: user.phone || "",
-        },
-        theme: { color: "#3399cc" },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      console.error(err);
-      alert(err.message || "Something went wrong");
-    }
   };
 
   // ------------------ JSX ------------------
@@ -201,12 +147,18 @@ export default function CourseDetail() {
         {/* Sidebar */}
         <div className="lg:w-72 flex-shrink-0 lg:sticky lg:top-28">
           <div className="bg-white shadow-lg rounded-xl p-6 flex flex-col gap-4">
-            <button
-              onClick={handleEnroll}
-              className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-green-700 transition"
-            >
-              Enroll Now
-            </button>
+            {user ? (
+              <button className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-green-700 transition">
+                Enroll Now
+              </button>
+            ) : (
+              <button
+                disabled
+                className="bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold shadow cursor-not-allowed"
+              >
+                Login to Enroll
+              </button>
+            )}
             <button className="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold shadow hover:bg-gray-300 transition">
               Preview Course
             </button>

@@ -25,7 +25,7 @@ def generate_jwt(user):
         "role": user.role,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7),
     }
-    token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
     return token
 
 
@@ -82,56 +82,53 @@ def login_api(request):
 
 # ----------------- Google Login -----------------
 from django.conf import settings
-
+import secrets
 
 @csrf_exempt
 def google_login_api(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST method required"}, status=400)
 
-    body = json.loads(request.body)
-    token = body.get("token")
-    if not token:
-        return JsonResponse({"error": "Token missing"}, status=400)
-
     try:
+        body = json.loads(request.body)
+        token = body.get("token")
+        if not token:
+            return JsonResponse({"error": "Token missing"}, status=400)
+
+        # Verify token with Google
         idinfo = id_token.verify_oauth2_token(
-            token,
-            google_requests.Request(),
-            settings.GOOGLE_CLIENT_ID  # Must match frontend client ID
+            token, google_requests.Request(), settings.GOOGLE_CLIENT_ID
         )
 
         email = idinfo.get("email")
-        name = idinfo.get("name", "Unknown")  # Google name
+        name = idinfo.get("name", "Unknown")
         if not email:
             return JsonResponse({"error": "Email not found in token"}, status=400)
 
         # Get or create user
-        user = User.objects.filter(email=email).first()
+        user = User.objects(email=email).first()
         if not user:
             user = User(
                 email=email,
                 name=name,
                 role="client",
-                phone="0000000000"  # dummy phone
+                phone="0000000000"
             )
-            user.set_password("google_dummy_password")
+            import secrets
+            user.set_password(secrets.token_urlsafe(16))  # random password
             user.save()
 
         jwt_token = generate_jwt(user)
         return JsonResponse({
             "access": jwt_token,
-            "user": {
-                "email": user.email,
-                "name": user.name,
-                "role": user.role
-            }
+            "user": {"email": user.email, "name": user.name, "role": user.role}
         })
 
     except ValueError as e:
-        return JsonResponse({"error": f"Invalid token: {str(e)}"}, status=400)
+        return JsonResponse({"error": f"Invalid Google token: {str(e)}"}, status=400)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
+        return JsonResponse({"error": str(e)}, status=500)
+
 
 # ----------------- Profile -----------------
 from .decorators import jwt_required
