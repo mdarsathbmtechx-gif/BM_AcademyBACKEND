@@ -34,7 +34,7 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 # ✅ Include your Render backend domain here also
 ALLOWED_HOSTS = os.getenv(
     "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,bm-academy-backend.onrender.com"
+    "localhost,127.0.0.1,bm-academybackend.onrender.com",
 ).split(",")
 
 # ------------------------
