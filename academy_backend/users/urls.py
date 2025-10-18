@@ -8,7 +8,8 @@ from .views import (
     AdminLoginAPIView
 )
 from users import views
-from .views import create_temp_admin
+from .views import CreateTempAdminView
+
 
 urlpatterns = [
     # Client / User endpoints
@@ -20,5 +21,5 @@ urlpatterns = [
 
     # Admin endpoint
     path('admin/login/', AdminLoginAPIView.as_view(), name='admin-login'),
-     path('create-temp-admin/', create_temp_admin),
-]
+    path('create-temp-admin/', CreateTempAdminView.as_view(), name='create-temp-admin'),
+    ]

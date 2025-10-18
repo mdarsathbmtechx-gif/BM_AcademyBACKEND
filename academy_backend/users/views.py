@@ -202,26 +202,20 @@ def list_users(request):
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from users.models import User  # your custom user model
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.contrib.auth.models import User
 
-@csrf_exempt
-def create_temp_admin(request):
-    """
-    Temporary endpoint to create an admin user.
-    Use POST with 'email' and 'password'.
-    Delete this endpoint after creating the admin.
-    """
-    if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-
-    email = request.POST.get("email")
-    password = request.POST.get("password")
-
-    if not email or not password:
-        return JsonResponse({"error": "Email and password required"}, status=400)
-
-    if User.objects.filter(email=email).exists():
-        return JsonResponse({"status": "Admin already exists"})
-
-    User.objects.create_superuser(email=email, password=password, role="admin")
-    return JsonResponse({"status": "Admin created successfully"})
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateTempAdminView(View):
+    def post(self, request):
+        import json
+        data = json.loads(request.body)
+        email = data.get("email")
+        password = data.get("password")
+        if not email or not password:
+            return JsonResponse({"error": "Email and password required"}, status=400)
+        if User.objects.filter(username=email).exists():
+            return JsonResponse({"error": "Admin already exists"}, status=400)
+        user = User.objects.create_superuser(username=email, email=email, password=password)
+        return JsonResponse({"status": "Admin created successfully"})
