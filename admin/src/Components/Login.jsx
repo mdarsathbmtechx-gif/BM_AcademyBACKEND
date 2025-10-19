@@ -9,55 +9,61 @@ export default function AdminLogin({ onLogin }) {
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    try {
-      // Construct URL safely
-      const loginUrl = `${import.meta.env.VITE_BASE_URI}users/admin/login/`;
-      console.log("Admin login URL:", loginUrl);
+  try {
+    // Construct URL safely
+    const loginUrl = `${import.meta.env.VITE_BASE_URI}users/admin/login/`;
+    console.log("Admin login URL:", loginUrl);
 
-      // Send login request
-      const res = await fetch(loginUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    // Send login request
+    const res = await fetch(loginUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-      let data;
-      const contentType = res.headers.get("content-type");
+    let data;
+    const contentType = res.headers.get("content-type");
 
-      if (contentType && contentType.includes("application/json")) {
-        data = await res.json();
-      } else {
-        const text = await res.text();
-        throw new Error(text || "Server returned an invalid response");
-      }
-
-      if (!res.ok) {
-        throw new Error(data.detail || "Login failed");
-      }
-
-      // Check user role
-      if (data.user.role !== "admin") {
-        throw new Error("You are not authorized as admin");
-      }
-
-      // Save token & user info in localStorage
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("user_email", data.user.email);
-      localStorage.setItem("user_role", data.user.role);
-
-      // Notify parent app
-      if (onLogin) onLogin();
-
-      // Redirect to admin dashboard
-      navigate("/dashboard", { replace: true });
-    } catch (err) {
-      console.error("Login error:", err);
-      setError(err.message || "Network error. Please try again.");
+    if (contentType && contentType.includes("application/json")) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      throw new Error(text || "Server returned an invalid response");
     }
-  };
+
+    if (!res.ok) {
+      throw new Error(data.detail || data.message || "Login failed");
+    }
+
+    // Ensure admin object exists
+    if (!data.admin) {
+      throw new Error("Invalid response from server: admin info missing");
+    }
+
+    // Check user role
+    if (data.admin.role !== "admin") {
+      throw new Error("You are not authorized as admin");
+    }
+
+    // Save token & admin info in localStorage
+    localStorage.setItem("access_token", data.access);
+    localStorage.setItem("user_email", data.admin.email);
+    localStorage.setItem("user_role", data.admin.role);
+
+    // Notify parent app
+    if (onLogin) onLogin();
+
+    // Redirect to admin dashboard
+    navigate("/dashboard", { replace: true });
+  } catch (err) {
+    console.error("Login error:", err);
+    setError(err.message || "Network error. Please try again.");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
