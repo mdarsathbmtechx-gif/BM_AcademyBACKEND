@@ -9,22 +9,21 @@ const Users = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-
-        // ✅ Get token stored after signup/login
         const token = localStorage.getItem("token");
 
-        // ✅ Correct endpoint (matches Django's api/users/list/)
         const res = await axios.get(
           `${import.meta.env.VITE_BASE_URI}/users/list/`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         setUsers(res.data);
       } catch (err) {
-        console.error("Error fetching users:", err.response?.data || err);
-        alert("Failed to fetch users");
+        console.error(
+          "Error fetching users:",
+          err.response?.status,
+          err.response?.data || err
+        );
+        alert("Failed to fetch users. Check console for details.");
       } finally {
         setLoading(false);
       }
@@ -34,35 +33,52 @@ const Users = () => {
   }, []);
 
   if (loading)
-    return <div className="p-10 text-center text-gray-700">Loading users...</div>;
+    return (
+      <div className="p-10 text-center text-gray-700">Loading users...</div>
+    );
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">All Users</h2>
 
       {users.length === 0 ? (
         <p className="text-gray-600">No users found.</p>
       ) : (
-        <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+        <div className="overflow-x-auto bg-white shadow-lg rounded-xl">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-yellow-500 text-black">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Phone Number</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
+                  Phone
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 transition">
+              {users.map((user, index) => (
+                <tr
+                  key={user.id || index}
+                  className={`transition hover:bg-gray-50 ${
+                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                  }`}
+                >
                   <td className="px-6 py-4 text-gray-700">{user.name || "N/A"}</td>
                   <td className="px-6 py-4 text-gray-700">{user.email}</td>
                   <td className="px-6 py-4 text-gray-700">{user.phone || "N/A"}</td>
                   <td className="px-6 py-4">
                     <button
-                      onClick={() => alert(`Viewing details for ${user.name || user.email}`)}
-                      className="text-blue-600 hover:underline font-medium"
+                      onClick={() =>
+                        alert(`Viewing details for ${user.name || user.email}`)
+                      }
+                      className="bg-yellow-400 hover:bg-yellow-500 text-black font-medium py-1 px-3 rounded-lg transition-colors"
                     >
                       View
                     </button>
