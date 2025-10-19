@@ -10,9 +10,7 @@ const TrendingCourses = () => {
   // Public fetch function
   const publicFetch = async (url) => {
     const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`Failed to fetch: ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
     return res.json();
   };
 
@@ -42,18 +40,14 @@ const TrendingCourses = () => {
     return null;
   };
 
-  if (loading) {
-    return <p className="text-center py-20 text-gray-500">Loading courses...</p>;
-  }
-
-  if (error) {
+  if (loading) return <p className="text-center py-20 text-gray-500">Loading courses...</p>;
+  if (error)
     return (
       <div className="text-center py-20 text-red-500">
         <p>Error: {error}</p>
         <p>Could not load courses. Please try again later.</p>
       </div>
     );
-  }
 
   return (
     <section className="bg-gray-50 py-16 px-4 md:px-16">
@@ -88,12 +82,12 @@ const TrendingCourses = () => {
               <div className="p-6 flex flex-col justify-between flex-grow">
                 <div>
                   <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-                  <p className="text-gray-500 mb-4">{course.description}</p>
+                  <p className="text-gray-500 mb-4 line-clamp-3">{course.description}</p>
                   <div className="flex justify-between text-gray-700 text-sm font-medium">
                     <p>
                       Duration: <span className="font-normal">{course.duration}</span>
                     </p>
-                    <p>{course.type}</p>
+                    <p>{course.type || "Certificate Provided"}</p>
                   </div>
                 </div>
                 <button
@@ -108,7 +102,7 @@ const TrendingCourses = () => {
         })}
       </div>
 
-      {/* Why Choose Section (keep as-is) */}
+      {/* Why Choose Section */}
       <section className="mt-16 px-6">
         <div className="max-w-6xl mx-auto text-center">
           <h3 className="text-3xl md:text-4xl font-extrabold mb-8 text-yellow-400 drop-shadow-lg">
