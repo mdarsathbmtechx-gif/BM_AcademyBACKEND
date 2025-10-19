@@ -144,7 +144,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.http import JsonResponse
 from .models import User  # MongoEngine User
-from .utils import generate_jwt
+from .utils import create_jwt  # instead of generate_jwt
 import json
 
 class AdminLoginAPIView(APIView):
