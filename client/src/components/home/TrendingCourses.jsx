@@ -7,7 +7,6 @@ const TrendingCourses = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Public fetch function
   const publicFetch = async (url) => {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
@@ -20,7 +19,7 @@ const TrendingCourses = () => {
         setLoading(true);
         const data = await publicFetch(`${import.meta.env.VITE_BASE_URI}courses/`);
         if (!Array.isArray(data)) throw new Error("Courses response is not an array");
-        setCourses(data);
+        setCourses(data.slice(0, 6)); // Take only top 6 courses
       } catch (err) {
         console.error("Courses fetch error:", err);
         setError(err.message);
@@ -32,7 +31,6 @@ const TrendingCourses = () => {
     fetchCourses();
   }, []);
 
-  // Safely get course ID
   const getCourseId = (course) => {
     if (course._id?.$oid) return course._id.$oid;
     if (course.id) return course.id;
@@ -62,7 +60,7 @@ const TrendingCourses = () => {
       </div>
 
       {/* Courses Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 mx-auto">
         {courses.map((course) => {
           const courseId = getCourseId(course);
           if (!courseId) return null;
