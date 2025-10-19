@@ -143,8 +143,12 @@ def profile_api(request):
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class AdminLoginAPIView(APIView):
+    permission_classes = [AllowAny]  # public endpoint
+
     def post(self, request):
         import json
         data = json.loads(request.body)
@@ -154,15 +158,26 @@ class AdminLoginAPIView(APIView):
         if not email or not password:
             return JsonResponse({"error": "Email and password required"}, status=400)
 
-        # 👇 Use authenticate (works with both username/email if configured)
+        # Authenticate admin user
         user = authenticate(username=email, password=password)
 
+        # Ensure it's an admin (superuser or staff)
         if user is None or not user.is_staff:
-            return JsonResponse({"detail": "Admin not found"}, status=404)
+            return JsonResponse({"detail": "Admin not found or invalid credentials"}, status=404)
+
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
 
         return JsonResponse({
             "message": "Admin login successful",
-            "admin": {"email": user.email}
+            "access": access_token,
+            "refresh": str(refresh),
+            "admin": {
+                "email": user.email,
+                "is_staff": user.is_staff,
+                "is_superuser": user.is_superuser
+            }
         })
 
 
