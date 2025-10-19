@@ -140,46 +140,47 @@ def profile_api(request):
 
 
 # ----------------- Admin Login DRF Style -----------------
-from django.contrib.auth import authenticate
-from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.http import JsonResponse
+from .models import User  # MongoEngine User
+from .utils import generate_jwt
+import json
 
 class AdminLoginAPIView(APIView):
     permission_classes = [AllowAny]  # public endpoint
 
     def post(self, request):
-        import json
-        data = json.loads(request.body)
-        email = data.get("email")
-        password = data.get("password")
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            password = data.get("password")
 
-        if not email or not password:
-            return JsonResponse({"error": "Email and password required"}, status=400)
+            if not email or not password:
+                return JsonResponse({"error": "Email and password required"}, status=400)
 
-        # Authenticate admin user
-        user = authenticate(username=email, password=password)
+            # Fetch admin from MongoEngine
+            user = User.objects(email=email, role="admin").first()
+            if not user or not user.check_password(password):
+                return JsonResponse(
+                    {"detail": "Admin not found or invalid credentials"}, status=404
+                )
 
-        # Ensure it's an admin (superuser or staff)
-        if user is None or not user.is_staff:
-            return JsonResponse({"detail": "Admin not found or invalid credentials"}, status=404)
+            # Generate JWT token
+            access_token = generate_jwt(user)
 
-        # Generate JWT tokens
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
+            return JsonResponse({
+                "message": "Admin login successful",
+                "access": access_token,
+                "admin": {
+                    "email": user.email,
+                    "role": user.role,
+                    "name": getattr(user, "name", "")
+                }
+            })
 
-        return JsonResponse({
-            "message": "Admin login successful",
-            "access": access_token,
-            "refresh": str(refresh),
-            "admin": {
-                "email": user.email,
-                "is_staff": user.is_staff,
-                "is_superuser": user.is_superuser
-            }
-        })
-
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
 
 
 
