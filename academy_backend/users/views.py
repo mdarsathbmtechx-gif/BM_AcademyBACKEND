@@ -207,7 +207,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
-from .models import User  # <-- your MongoEngine User model
+from .models import User  # <-- MongoEngine User model
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateTempAdminView(View):
@@ -220,14 +220,12 @@ class CreateTempAdminView(View):
         if not email or not password:
             return JsonResponse({"error": "Email and password required"}, status=400)
 
-        # check existing admin in MongoDB
         if User.objects(email=email, role="admin").first():
             return JsonResponse({"error": "Admin already exists"}, status=400)
 
-        # create in MongoDB
+        # Create admin in MongoEngine
         user = User(email=email, role="admin", name="Temp Admin", phone="0000000000")
         user.set_password(password)
         user.save()
 
         return JsonResponse({"status": "Admin created successfully"})
-
