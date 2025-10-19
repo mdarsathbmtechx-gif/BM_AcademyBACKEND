@@ -140,43 +140,31 @@ def profile_api(request):
 
 
 # ----------------- Admin Login DRF Style -----------------
+from django.contrib.auth import authenticate
+from django.http import JsonResponse
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from .models import User
-from .serializers import UserLoginSerializer
-from .utils import create_jwt  
 
-@method_decorator(csrf_exempt, name="dispatch")
 class AdminLoginAPIView(APIView):
-    authentication_classes = []  # ❌ Disable authentication
-    permission_classes = []      # ❌ Allow public access
-
     def post(self, request):
-        serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data["email"]
-            password = serializer.validated_data["password"]
+        import json
+        data = json.loads(request.body)
+        email = data.get("email")
+        password = data.get("password")
 
-            user = User.objects(email=email, role="admin").first()
-            if not user:
-                return Response({"detail": "Admin not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not email or not password:
+            return JsonResponse({"error": "Email and password required"}, status=400)
 
-            if not user.check_password(password):
-                return Response({"detail": "Invalid password"}, status=status.HTTP_401_UNAUTHORIZED)
+        # 👇 Use authenticate (works with both username/email if configured)
+        user = authenticate(username=email, password=password)
 
-            token = create_jwt(user)
-            return Response({
-                "access": token,
-                "user": {
-                    "email": user.email,
-                    "role": user.role
-                }
-            })
+        if user is None or not user.is_staff:
+            return JsonResponse({"detail": "Admin not found"}, status=404)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({
+            "message": "Admin login successful",
+            "admin": {"email": user.email}
+        })
+
 
 
 
