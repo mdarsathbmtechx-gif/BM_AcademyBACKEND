@@ -3,7 +3,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useAuthFetch } from "../../utils/authFetch";
 
 // ✅ Fixed API URL: ensure proper slash
-const apiUrl = `${import.meta.env.VITE_BASE_URI}courses/`;
+const apiUrl = `${import.meta.env.VITE_BASE_URI}/courses/`;
 
 export default function Courses() {
   const authFetch = useAuthFetch(); // secure fetch with admin token
