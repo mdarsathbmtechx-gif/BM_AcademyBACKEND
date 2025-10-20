@@ -12,7 +12,7 @@ const Users = () => {
         const token = localStorage.getItem("token");
 
         const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URI}users/list/`,
+          `${import.meta.env.VITE_BASE_URI}/users/list/`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
