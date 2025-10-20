@@ -11,10 +11,11 @@ const Users = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-        const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URI}/users/list/`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        // ✅ FIXED: ensures no double slash (//)
+        const base = import.meta.env.VITE_BASE_URI.replace(/\/$/, "");
+        const res = await axios.get(`${base}/users/list/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         setUsers(res.data);
       } catch (err) {
@@ -70,9 +71,13 @@ const Users = () => {
                     index % 2 === 0 ? "bg-gray-50" : "bg-white"
                   }`}
                 >
-                  <td className="px-6 py-4 text-gray-700">{user.name || "N/A"}</td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {user.name || "N/A"}
+                  </td>
                   <td className="px-6 py-4 text-gray-700">{user.email}</td>
-                  <td className="px-6 py-4 text-gray-700">{user.phone || "N/A"}</td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {user.phone || "N/A"}
+                  </td>
                   <td className="px-6 py-4">
                     <button
                       onClick={() =>
