@@ -1,48 +1,35 @@
+// client/src/Dashboard/Sidebar.jsx
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Home, BookOpen, LogOut } from "lucide-react";
+import { FaHome, FaBook, FaUser } from "react-icons/fa";
 
-export default function Sidebar() {
-  const location = useLocation();
-
-  const menuItems = [
-    { name: "Dashboard", path: "/dashboard", icon: <Home size={18} /> },
-    { name: "Courses", path: "/dashboard/courses", icon: <BookOpen size={18} /> },
+export default function Sidebar({ onNavigate, current }) {
+  const navItems = [
+    { name: "Dashboard", icon: <FaHome /> },
+    { name: "Courses", icon: <FaBook /> },
+    { name: "Profile", icon: <FaUser /> },
   ];
 
   return (
-    <aside className="w-64 bg-gray-800 text-gray-100 flex flex-col">
-      <div className="p-4 text-2xl font-bold border-b border-gray-700">
+    <aside className="w-64 bg-[#0f172a] text-white flex flex-col py-6 px-4 shadow-lg">
+      <h1 className="text-2xl font-bold mb-8 text-yellow-400 text-center">
         BM Academy
-      </div>
-
-      <nav className="flex-1 p-4 space-y-2">
-        {menuItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex items-center gap-3 px-3 py-2 rounded-md transition 
-              ${
-                location.pathname === item.path
-                  ? "bg-yellow-500 text-black font-semibold"
-                  : "hover:bg-gray-700"
-              }`}
+      </h1>
+      <nav className="flex flex-col gap-2">
+        {navItems.map((item) => (
+          <button
+            key={item.name}
+            onClick={() => onNavigate(item.name)}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition ${
+              current === item.name
+                ? "bg-yellow-500 text-black"
+                : "hover:bg-yellow-400 hover:text-black"
+            }`}
           >
             {item.icon}
             {item.name}
-          </Link>
+          </button>
         ))}
       </nav>
-
-      <button
-        onClick={() => {
-          localStorage.removeItem("token");
-          window.location.href = "/login";
-        }}
-        className="m-4 flex items-center gap-3 px-3 py-2 rounded-md bg-red-600 hover:bg-red-500 text-white transition"
-      >
-        <LogOut size={18} /> Logout
-      </button>
     </aside>
   );
 }

@@ -1,39 +1,26 @@
+// client/src/Dashboard/Breadcrumbs.jsx
 import React from "react";
-import { useLocation, Link } from "react-router-dom";
+import { FaChevronRight } from "react-icons/fa";
 
-export default function Breadcrumbs() {
-  const location = useLocation();
-  const pathParts = location.pathname.split("/").filter(Boolean);
-
+export default function Breadcrumbs({ items }) {
   return (
-    <nav className="text-gray-600 text-sm">
-      <ol className="flex space-x-2">
-        <li>
-          <Link to="/" className="text-yellow-600 hover:underline">
-            Home
-          </Link>
-        </li>
-
-        {pathParts.map((part, index) => {
-          const path = "/" + pathParts.slice(0, index + 1).join("/");
-          const name = part.charAt(0).toUpperCase() + part.slice(1);
-          return (
-            <li key={path} className="flex items-center space-x-2">
-              <span>/</span>
-              <Link
-                to={path}
-                className={`hover:underline ${
-                  index === pathParts.length - 1
-                    ? "text-gray-800 font-semibold"
-                    : "text-yellow-600"
-                }`}
-              >
-                {name}
-              </Link>
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
+    <div className="flex items-center text-sm text-gray-500 mb-4">
+      {items.map((item, index) => (
+        <React.Fragment key={index}>
+          <span
+            className={`${
+              index === items.length - 1
+                ? "text-gray-900 font-semibold"
+                : "hover:underline cursor-pointer"
+            }`}
+          >
+            {item}
+          </span>
+          {index < items.length - 1 && (
+            <FaChevronRight className="mx-2 text-gray-400" size={10} />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
   );
 }
