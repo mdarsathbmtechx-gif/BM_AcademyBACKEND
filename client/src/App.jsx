@@ -23,6 +23,7 @@ import StudentDashboard from "./Dashboard/StudentDashboard";
 import AdminDashboard from "./components/Admin/AdminDashboard";
 import ManageCourses from "./components/Admin/ManageCourses";
 import ManageUsers from "./components/Admin/ManageUsers";
+import Dashboard from "./Routes/Dashboard";
 
 // Role-based protection
 import PrivateRoute from "./Routes/PrivateRoute";
@@ -42,12 +43,14 @@ export const App = () => {
               <Routes>
                 <Route path="/" element={<HomeRoutes />} />
                 <Route path="/about" element={<Aboutroutes />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+
 <Route
   path="/courses/*"
   element={
     
       <Coursesroutes />
-    
+          
   }
 />
                 <Route path="/sact" element={<SACTroutes />} />
