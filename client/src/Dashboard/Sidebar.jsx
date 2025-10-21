@@ -10,7 +10,7 @@ export default function Sidebar({ onNavigate, current }) {
 
   return (
     <aside className="w-64 bg-[#0f172a] text-white flex flex-col py-6 px-4 shadow-lg">
-      <h1 className="text-2xl font-bold mb-8 text-yellow-400 text-center">
+      <h1 className="mt-18 text-2xl font-bold mb-8 text-yellow-400 text-center">
         BM Academy
       </h1>
       <nav className="flex flex-col gap-2">
