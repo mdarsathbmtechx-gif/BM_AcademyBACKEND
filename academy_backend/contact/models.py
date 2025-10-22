@@ -1,14 +1,17 @@
 from django.db import models
 
 # Create your models here.
-from django.db import models
+# contact/models.py
+from mongoengine import Document, StringField, DateTimeField
+from datetime import datetime
 
-class ContactMessage(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    subject = models.CharField(max_length=200, blank=True)
-    message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+class ContactMessage(Document):
+    name = StringField(required=True)
+    email = StringField(required=True)
+    subject = StringField()
+    message = StringField(required=True)
+    created_at = DateTimeField(default=datetime.utcnow)
+
 
     def __str__(self):
         return f"{self.name} - {self.subject or 'No subject'}"
