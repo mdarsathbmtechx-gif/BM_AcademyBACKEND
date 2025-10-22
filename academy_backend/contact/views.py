@@ -1,13 +1,20 @@
 # contact/views.py
+import threading
+from django.core.mail import send_mail
+from django.conf import settings
+# contact/views.py
+import threading
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+
 from .models import ContactMessage
 from .serializers import ContactMessageSerializer
 
-def send_email(subject, message):
-    """Send email and print errors if any."""
+
+def send_email_in_background(subject, message):
+    """Run send_mail in a background thread."""
     try:
         send_mail(
             subject=subject,
@@ -17,9 +24,8 @@ def send_email(subject, message):
             fail_silently=False,
         )
     except Exception as e:
-        import traceback
         print("Email sending failed:", e)
-        traceback.print_exc()
+
 
 class ContactMessageCreateView(generics.GenericAPIView):
     serializer_class = ContactMessageSerializer
@@ -32,6 +38,7 @@ class ContactMessageCreateView(generics.GenericAPIView):
         instance = ContactMessage(**serializer.validated_data)
         instance.save()
 
+        # Prepare email
         subject = f"New Contact Message: {instance.subject or 'No Subject'}"
         message = f"""
 You have a new contact form submission:
@@ -42,9 +49,11 @@ Subject: {instance.subject}
 Message:
 {instance.message}
 """
-
-        # Call directly for now
-        send_email(subject, message)
+        # Send email asynchronously
+        threading.Thread(
+            target=send_email_in_background,
+            args=(subject, message)
+        ).start()
 
         return Response({
             "id": str(instance.id),
