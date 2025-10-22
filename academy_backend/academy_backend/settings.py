@@ -114,10 +114,7 @@ if MONGO_ENV == "atlas":
 else:
     MONGO_URI = os.getenv("MONGO_LOCAL_URI")
 
-if MONGO_URI:
-    connect(host=MONGO_URI)
-else:
-    raise ValueError("MongoDB URI is not set. Check your environment variables.")
+
 
 # ------------------------
 # Password validation
