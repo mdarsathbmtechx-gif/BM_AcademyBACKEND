@@ -10,6 +10,7 @@ urlpatterns = [
     # Users API (signup, login, google-login, profile, admin login)
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
+    path('api/contact/', include('contact.urls')),
 ]
 
 # Serve media files in development
