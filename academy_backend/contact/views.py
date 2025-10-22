@@ -14,23 +14,19 @@ class ContactMessageCreateView(generics.CreateAPIView):
         # Save the message to the database
         instance = serializer.save()
 
-        # Try sending email, log if it fails
-        try:
-            send_mail(
-                subject=f"New Contact Message: {instance.subject or 'No Subject'}",
-                message=f"""
-You have a new contact form submission:
+        # Send email notification
+#         send_mail(
+#             subject=f"New Contact Message: {instance.subject or 'No Subject'}",
+#             message=f"""
+# You have a new contact form submission:
 
-Name: {instance.name}
-Email: {instance.email}
-Subject: {instance.subject}
-Message:
-{instance.message}
-""",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[settings.EMAIL_HOST_USER],
-                fail_silently=False,
-            )
-        except Exception as e:
-            # Log the error instead of crashing
-            print("Email sending failed:", e)
+# Name: {instance.name}
+# Email: {instance.email}
+# Subject: {instance.subject}
+# Message:
+# {instance.message}
+# """,
+#             from_email=settings.DEFAULT_FROM_EMAIL,
+#             recipient_list=[settings.EMAIL_HOST_USER],
+#             fail_silently=False,
+#         )
