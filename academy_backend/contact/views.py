@@ -2,6 +2,12 @@
 import threading
 from django.core.mail import send_mail
 from django.conf import settings
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+
+from .models import ContactMessage
+from .serializers import ContactMessageSerializer
+
 
 def send_email_in_background(subject, message):
     """Run send_mail in a background thread."""
@@ -28,7 +34,6 @@ class ContactMessageCreateView(generics.GenericAPIView):
         instance = ContactMessage(**serializer.validated_data)
         instance.save()
 
-        # Prepare email
         subject = f"New Contact Message: {instance.subject or 'No Subject'}"
         message = f"""
 You have a new contact form submission:
@@ -39,7 +44,7 @@ Subject: {instance.subject}
 Message:
 {instance.message}
 """
-        # Send email asynchronously
+
         threading.Thread(
             target=send_email_in_background,
             args=(subject, message)
