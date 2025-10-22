@@ -58,7 +58,7 @@ export default function StudentDashboard() {
       <main className="flex-1 p-8">
         <Breadcrumbs items={breadcrumb} />
 
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6"> 
           {currentPage}
         </h2>
 
