@@ -6,6 +6,8 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import AcademyBanner from "../assets/img/Academy-banner.jpg";
+
 
 // Icons
 import { IoIosRocket } from "react-icons/io";
@@ -57,21 +59,20 @@ const WelcomeBanner = () => {
 
   // Fallback banners if API fails or is empty
   const fallbackBanners = [
-    {
-      title: "Discover Your Career Path",
-      description:
-        "SACT – Smart Aptitude & Career Test matches your skills with careers & courses. Your roadmap in minutes.",
-      image:
-        "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80",
-    },
-    {
-      title: "Scholarships up to 85%",
-      description:
-        "Don’t let fees hold you back. At BM Academy, every deserving student gets access to quality education with massive scholarship support.",
-      image:
-        "https://www.toptal.com/designers/subtlepatterns/patterns/circuit.png",
-    },
-  ];
+  {
+    title: "Discover Your Career Path",
+    description:
+      "SACT – Smart Aptitude & Career Test matches your skills with careers & courses. Your roadmap in minutes.",
+    image: AcademyBanner,
+  },
+  {
+    title: "Scholarships up to 85%",
+    description:
+      "Don’t let fees hold you back. At BM Academy, every deserving student gets access to quality education with massive scholarship support.",
+    image: AcademyBanner, // You can use the same local image or another one
+  },
+];
+
 
   const renderBanner = (banner, index) => (
     <div key={index}>
