@@ -4,6 +4,8 @@ import { FaGraduationCap } from "react-icons/fa6";
 import { FaLocationDot } from "react-icons/fa6";
 import { FaHandPointRight } from "react-icons/fa";
 import { FiTarget } from "react-icons/fi";
+import HeroImg from "../../assets/img/hero academy.jpg";
+
 
 export default function HeroSection() {
   return (
@@ -62,10 +64,11 @@ export default function HeroSection() {
         {/* Right Illustration (Optional Placeholder) */}
         <div className="hidden lg:block">
           <img
-            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt="BM Academy Illustration"
-            className="w-full h-auto drop-shadow-xl"
-          />
+  src={HeroImg}
+  alt="BM Academy Illustration"
+  className="w-full h-auto drop-shadow-xl rounded-2xl"
+/>
+
 
         </div>
       </div>
