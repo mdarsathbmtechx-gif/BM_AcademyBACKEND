@@ -25,40 +25,60 @@ export default function Payments() {
   };
 
   const handlePayment = async () => {
-    const res = await loadRazorpayScript();
+  const res = await loadRazorpayScript();
 
-    if (!res) {
-      alert("Razorpay SDK failed to load. Are you online?");
-      return;
-    }
+  if (!res) {
+    alert("Razorpay SDK failed to load. Are you online?");
+    return;
+  }
 
-    // You should call your backend to create an order and get `order_id`
-    // For demo purposes, using dummy values
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY, // Add your Razorpay key in .env
-      amount: course.price * 100, // Amount in paise
-      currency: "INR",
-      name: "BM Academy",
-      description: `Enroll in ${course.title}`,
-      image: "/logo.png", // Optional: logo in header
-      order_id: "", // Fill with your backend generated order_id if available
-      handler: function (response) {
-        console.log("Payment Success:", response);
-        alert("Payment Successful! Payment ID: " + response.razorpay_payment_id);
-        navigate("/dashboard/student");
-      },
-      prefill: {
-        name: course.user_name || "", // Optional
-        email: course.user_email || "", // Optional
-      },
-      theme: {
-        color: "#FACC15",
-      },
-    };
+  const options = {
+    key: import.meta.env.VITE_RAZORPAY_KEY,
+    amount: course.price * 100,
+    currency: "INR",
+    name: "BM Academy",
+    description: `Enroll in ${course.title}`,
+    image: "/logo.png",
+    order_id: "", // backend-generated order ID recommended
+    handler: async function (response) {
+      console.log("Payment Success:", response);
 
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.open();
+      try {
+        // Call backend to save enrollment
+        const r = await fetch(`${import.meta.env.VITE_BASE_URI}enroll_course/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ course_id: course.id }),
+        });
+        const data = await r.json();
+        if (data.success) {
+          alert("Payment successful! You are now enrolled.");
+        } else {
+          alert(data.message || "Enrollment failed.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Enrollment failed due to network error.");
+      }
+
+      navigate("/dashboard/student");
+    },
+    prefill: {
+      name: JSON.parse(localStorage.getItem("user"))?.name || "",
+      email: JSON.parse(localStorage.getItem("user"))?.email || "",
+    },
+    theme: {
+      color: "#FACC15",
+    },
   };
+
+  const paymentObject = new window.Razorpay(options);
+  paymentObject.open();
+};
+
 
   if (!course) return null;
 
