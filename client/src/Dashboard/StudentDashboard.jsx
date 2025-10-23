@@ -58,12 +58,12 @@ export default function StudentDashboard() {
       <main className="flex-1 p-8">
         <Breadcrumbs items={breadcrumb} />
 
-        <h2 className="text-2xl font-bold text-gray-800 mb-6"> 
+        <h2 className="pt-18 text-2xl font-bold text-gray-800 mb-6"> 
           {currentPage}
         </h2>
 
         {loading ? (
-          <div className="pt-18 text-center text-gray-700">Loading...</div>
+          <div className="text-center text-gray-700">Loading...</div>
         ) : currentPage === "Courses" ? (
           <>
             {/* Enrolled Courses */}
