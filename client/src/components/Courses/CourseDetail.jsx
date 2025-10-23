@@ -1,12 +1,16 @@
 // src/components/Courses/CourseDetail.jsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 
 export default function CourseDetail() {
   const { courseId } = useParams();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
+
 
   const user = JSON.parse(localStorage.getItem("user")) || null;
 
@@ -148,9 +152,13 @@ export default function CourseDetail() {
         <div className="lg:w-72 flex-shrink-0 lg:sticky lg:top-28">
           <div className="bg-white shadow-lg rounded-xl p-6 flex flex-col gap-4">
             {user ? (
-              <button className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-green-700 transition">
-                Enroll Now
-              </button>
+              <button
+  onClick={() => navigate("/payments", { state: { course } })}
+  className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-green-700 transition"
+>
+  Enroll Now
+</button>
+
             ) : (
               <button
                 disabled
