@@ -8,9 +8,7 @@ export default function Payments() {
   const { course } = location.state || {};
 
   useEffect(() => {
-    if (!course) {
-      navigate("/courses");
-    }
+    if (!course) navigate("/courses");
   }, [course, navigate]);
 
   const loadRazorpayScript = () =>
@@ -26,60 +24,73 @@ export default function Payments() {
     const loaded = await loadRazorpayScript();
     if (!loaded) return alert("Razorpay SDK failed to load. Are you online?");
 
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY,
-      amount: course.price * 100, // amount in paise
-      currency: "INR",
-      name: "BM Academy",
-      description: `Enroll in ${course.title}`,
-      image: "/logo.png",
-      order_id: "", // replace with backend-generated order_id if available
-      handler: async function (response) {
-        console.log("Payment Success:", response);
+    try {
+      // 1️⃣ Create order on backend
+      const orderRes = await fetch(`${import.meta.env.VITE_BASE_URI}create_order/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ course_id: course.id }),
+      });
 
-        try {
-          const r = await fetch(
-            `${import.meta.env.VITE_BASE_URI}enroll_course/`,
-            {
+      const orderData = await orderRes.json();
+      if (!orderData.order_id) return alert(orderData.error || "Order creation failed");
+
+      // 2️⃣ Configure Razorpay options
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY,
+        amount: orderData.amount,
+        currency: "INR",
+        name: "BM Academy",
+        description: `Enroll in ${course.title}`,
+        image: import.meta.env.VITE_BASE_URI + "/logo.png", // HTTPS-safe logo
+        order_id: orderData.order_id,
+        handler: async function (response) {
+          try {
+            // 3️⃣ Confirm payment on backend
+            const confirmRes = await fetch(`${import.meta.env.VITE_BASE_URI}confirm_payment/`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
-              body: JSON.stringify({ course_id: course.id }),
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const confirmData = await confirmRes.json();
+
+            if (confirmData.message || confirmData.success) {
+              alert(confirmData.message || "Payment successful! You are now enrolled.");
+            } else {
+              alert(confirmData.error || "Payment verification failed.");
             }
-          );
-
-          if (!r.ok) {
-            const errText = await r.text();
-            throw new Error(`HTTP ${r.status}: ${errText}`);
+          } catch (err) {
+            console.error("Payment verification error:", err);
+            alert("Payment verification failed. Check console for details.");
           }
 
-          const data = await r.json();
+          navigate("/dashboard/student");
+        },
+        prefill: {
+          name: JSON.parse(localStorage.getItem("user"))?.name || "",
+          email: JSON.parse(localStorage.getItem("user"))?.email || "",
+        },
+        theme: { color: "#FACC15" },
+      };
 
-          if (data.success) {
-            alert("Payment successful! You are now enrolled.");
-          } else {
-            alert(data.message || "Enrollment failed.");
-          }
-        } catch (err) {
-          console.error("Enrollment error:", err);
-          alert(
-            "Enrollment failed. Check console for details (CORS, token, or network issue)."
-          );
-        }
-
-        navigate("/dashboard/student");
-      },
-      prefill: {
-        name: JSON.parse(localStorage.getItem("user"))?.name || "",
-        email: JSON.parse(localStorage.getItem("user"))?.email || "",
-      },
-      theme: { color: "#FACC15" },
-    };
-
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.open();
+      // 4️⃣ Open Razorpay checkout
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (err) {
+      console.error("Payment initiation error:", err);
+      alert("Payment initiation failed. Check console for details.");
+    }
   };
 
   if (!course) return null;
