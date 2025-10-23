@@ -6,7 +6,7 @@ export default function Payments() {
   const location = useLocation();
   const navigate = useNavigate();
   const { course } = location.state || {};
-
+  
   useEffect(() => {
     if (!course) {
       // If no course info, redirect back
