@@ -5,7 +5,7 @@ import { FaLocationDot } from "react-icons/fa6";
 import { FaHandPointRight } from "react-icons/fa";
 import { FiTarget } from "react-icons/fi";
 import HeroImg from "../../assets/img/hero-academy.jpg";
-
+import { Link } from "react-router-dom";
 
 export default function HeroSection() {
   return (
@@ -51,13 +51,13 @@ export default function HeroSection() {
               <FaHandPointRight className="text-black" size={18} />
               Try AI Career Test (SACT)
             </a>
-            <a
-              href="#"
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-yellow-600 text-black font-semibold hover:bg-yellow-50 transition"
-            >
-              <FiTarget className="text-black" size={18} />
-              Explore Courses
-            </a>
+            <Link
+  to="/courses"
+  className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-yellow-600 text-black font-semibold hover:bg-yellow-50 transition"
+>
+  <FiTarget className="text-black" size={18} />
+  Explore Courses
+</Link>
           </div>
         </div>
 
