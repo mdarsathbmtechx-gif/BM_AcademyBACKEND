@@ -298,22 +298,23 @@ class CourseRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         return Response(serializer.data)
 
 
+
+# courses/views.py
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from courses.models import Course, Payment, EnrolledCourse
+from courses.models import Course, Payment
 import razorpay
 from django.conf import settings
 
 client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_order(request):
     try:
         course_id = request.data.get("course_id")
-        user = request.user
+        user = request.user  # Authenticated user
 
         course = Course.objects(id=course_id).first()
         if not course:
@@ -338,35 +339,41 @@ def create_order(request):
             "order_id": order["id"],
             "amount": amount,
             "currency": "INR",
-            "course_title": course.title
         })
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
 
+
+# courses/views.py
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from courses.models import Payment
+import razorpay
+from django.conf import settings
+
+client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def confirm_payment(request):
-    """
-    Verifies Razorpay payment and enrolls the user in the course
-    """
     try:
         payment_id = request.data.get("razorpay_payment_id")
         order_id = request.data.get("razorpay_order_id")
         signature = request.data.get("razorpay_signature")
-        user = request.user
 
-        # Fetch payment record
+        # Fetch payment record for this user
         payment = Payment.objects.filter(
             razorpay_order_id=order_id,
-            user=str(user.id)
+            user=str(request.user.id)
         ).first()
 
         if not payment:
             return Response({"error": "Payment record not found"}, status=404)
 
-        # Verify signature
+        # Verify Razorpay signature
         params_dict = {
             "razorpay_order_id": order_id,
             "razorpay_payment_id": payment_id,
@@ -375,26 +382,19 @@ def confirm_payment(request):
 
         try:
             client.utility.verify_payment_signature(params_dict)
-
-            # Mark payment as paid
             payment.razorpay_payment_id = payment_id
             payment.razorpay_signature = signature
             payment.status = "paid"
             payment.save()
-
-            # Enroll user
-            if not EnrolledCourse.objects.filter(user=user, course_id=str(payment.course_id)).exists():
-                EnrolledCourse.objects.create(user=user, course_id=str(payment.course_id))
-
-            return Response({"success": True, "message": "Payment verified and enrolled successfully."})
-
+            return Response({"message": "Payment successful"})
         except razorpay.errors.SignatureVerificationError:
             payment.status = "failed"
             payment.save()
-            return Response({"success": False, "error": "Payment verification failed"}, status=400)
+            return Response({"error": "Payment verification failed"}, status=400)
 
     except Exception as e:
-        return Response({"success": False, "error": str(e)}, status=500)
+        return Response({"error": str(e)}, status=500)
+
 
 
 
