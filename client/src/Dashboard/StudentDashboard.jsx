@@ -1,11 +1,12 @@
 // src/Dashboard/StudentDashboard.jsx
 import React, { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import API from "../api";
 import Sidebar from "./Sidebar";
 import Breadcrumbs from "./Breadcrumbs";
 
 export default function StudentDashboard() {
+  const location = useLocation();
   const [courses, setCourses] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,6 +15,14 @@ export default function StudentDashboard() {
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/login" />;
 
+  // Append newly purchased course passed via navigation state
+  useEffect(() => {
+    if (location.state?.newCourse) {
+      setEnrolledCourses(prev => [...prev, location.state.newCourse]);
+    }
+  }, [location.state]);
+
+  // Fetch courses & enrolled courses from backend
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -22,7 +31,6 @@ export default function StudentDashboard() {
           API.get("courses/"),
           API.get("enrollments/"),
         ]);
-
         setCourses(Array.isArray(coursesRes.data) ? coursesRes.data : []);
         setEnrolledCourses(Array.isArray(enrollRes.data) ? enrollRes.data : []);
       } catch (err) {
@@ -51,16 +59,10 @@ export default function StudentDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
       <Sidebar onNavigate={setCurrentPage} current={currentPage} />
-
-      {/* Main content */}
       <main className="flex-1 p-8">
         <Breadcrumbs items={breadcrumb} />
-
-        <h2 className="pt-18 text-2xl font-bold text-gray-800 mb-6"> 
-          {currentPage}
-        </h2>
+        <h2 className="pt-18 text-2xl font-bold text-gray-800 mb-6">{currentPage}</h2>
 
         {loading ? (
           <div className="text-center text-gray-700">Loading...</div>
@@ -68,101 +70,55 @@ export default function StudentDashboard() {
           <>
             {/* Enrolled Courses */}
             <section className="mb-12">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                Your Enrolled Courses
-              </h3>
+              <h3 className="text-xl font-semibold mb-4 text-gray-800">Your Enrolled Courses</h3>
               {enrolledCourses.length === 0 ? (
-                <p className="text-gray-600">
-                  You haven't enrolled in any courses yet.
-                </p>
+                <p className="text-gray-600">You haven't enrolled in any courses yet.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {enrolledCourses.map((course) => (
-                    <div
-                      key={course.id}
-                      className="bg-white p-5 rounded-lg shadow hover:shadow-xl transition cursor-default"
-                    >
-                      <h4 className="font-bold text-lg text-gray-800 mb-2">
-                        {course.title}
-                      </h4>
+                    <div key={course.id} className="bg-white p-5 rounded-lg shadow hover:shadow-xl transition cursor-default">
+                      <h4 className="font-bold text-lg text-gray-800 mb-2">{course.title}</h4>
                       <p className="text-gray-600">{course.description}</p>
                     </div>
                   ))}
                 </div>
               )}
             </section>
-            {/* Courses Table View */}
-<section className="mt-12">
-  <h3 className="text-xl font-semibold mb-4 text-gray-800">
-    Courses Overview
-  </h3>
 
-  {courses.length === 0 ? (
-    <p className="text-gray-600">No courses available.</p>
-  ) : (
-    <div className="overflow-x-auto bg-white rounded-lg shadow">
-      <table className="min-w-full text-left border-collapse">
-        <thead className="bg-gray-100 border-b">
-          <tr>
-            <th className="px-6 py-3 text-sm font-semibold text-gray-700">#</th>
-            <th className="px-6 py-3 text-sm font-semibold text-gray-700">Course Title</th>
-            <th className="px-6 py-3 text-sm font-semibold text-gray-700">Description</th>
-            <th className="px-6 py-3 text-sm font-semibold text-gray-700 text-center">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {courses.map((course, index) => (
-            <tr key={course.id} className="border-b hover:bg-gray-50">
-              <td className="px-6 py-3">{index + 1}</td>
-              <td className="px-6 py-3 font-medium text-gray-800">
-                {course.title}
-              </td>
-              <td className="px-6 py-3 text-gray-600">{course.description}</td>
-              <td className="px-6 py-3 text-center">
-                <button
-                  onClick={() => handleEnroll(course.id)}
-                  className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-4 py-1.5 rounded transition"
-                >
-                  Enroll
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )}
-</section>
-
-
-            {/* Available Courses */}
-            <section>
-              <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                Available Courses
-              </h3>
+            {/* Courses Table */}
+            <section className="mt-12">
+              <h3 className="text-xl font-semibold mb-4 text-gray-800">Courses Overview</h3>
               {courses.length === 0 ? (
                 <p className="text-gray-600">No courses available.</p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {courses.map((course) => (
-                    <div
-                      key={course.id}
-                      className="bg-white p-5 rounded-lg shadow hover:shadow-xl flex flex-col justify-between transition"
-                    >
-                      <div>
-                        <h4 className="font-bold text-lg text-gray-800 mb-2">
-                          {course.title}
-                        </h4>
-                        <p className="text-gray-600">{course.description}</p>
-                      </div>
-                      <button
-                        onClick={() => handleEnroll(course.id)}
-                        className="mt-4 bg-yellow-500 text-black font-semibold py-2 rounded hover:bg-yellow-400 transition"
-                      >
-                        Enroll
-                      </button>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto bg-white rounded-lg shadow">
+                  <table className="min-w-full text-left border-collapse">
+                    <thead className="bg-gray-100 border-b">
+                      <tr>
+                        <th className="px-6 py-3 text-sm font-semibold text-gray-700">#</th>
+                        <th className="px-6 py-3 text-sm font-semibold text-gray-700">Course Title</th>
+                        <th className="px-6 py-3 text-sm font-semibold text-gray-700">Description</th>
+                        <th className="px-6 py-3 text-sm font-semibold text-gray-700 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {courses.map((course, index) => (
+                        <tr key={course.id} className="border-b hover:bg-gray-50">
+                          <td className="px-6 py-3">{index + 1}</td>
+                          <td className="px-6 py-3 font-medium text-gray-800">{course.title}</td>
+                          <td className="px-6 py-3 text-gray-600">{course.description}</td>
+                          <td className="px-6 py-3 text-center">
+                            <button
+                              onClick={() => handleEnroll(course.id)}
+                              className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-4 py-1.5 rounded transition"
+                            >
+                              Enroll
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </section>
@@ -172,9 +128,7 @@ export default function StudentDashboard() {
             <p className="text-gray-600">Profile section coming soon...</p>
           </div>
         ) : (
-          <p className="text-gray-600">
-            Welcome to your dashboard! Use the sidebar to explore.
-          </p>
+          <p className="text-gray-600">Welcome to your dashboard! Use the sidebar to explore.</p>
         )}
       </main>
     </div>
