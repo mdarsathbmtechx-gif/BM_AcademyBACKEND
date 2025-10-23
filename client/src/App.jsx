@@ -24,6 +24,7 @@ import AdminDashboard from "./components/Admin/AdminDashboard";
 import ManageCourses from "./components/Admin/ManageCourses";
 import ManageUsers from "./components/Admin/ManageUsers";
 import Dashboard from "./Routes/Dashboard";
+import PaymentRoutes from "./Routes/Payment";
 
 // Role-based protection
 import PrivateRoute from "./Routes/PrivateRoute";
