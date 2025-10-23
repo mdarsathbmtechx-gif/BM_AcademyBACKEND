@@ -13,16 +13,14 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
- const navLinks = [
-  { name: "Courses", path: "/courses" },
-  { name: "SACT Test", path: "https://scat-topaz.vercel.app/Sact.html", external: true },
-  { name: "SAT Exam", path: "https://sample-sat.vercel.app/", external: true },
-  { name: "About", path: "/about" },
-  { name: "Verify Certificate", path: "/verify" },
-  { name: "Contact", path: "/contacts" },
-];
-
-
+  const navLinks = [
+    { name: "Courses", path: "/courses" },
+    { name: "SACT Test", path: "/sact" },
+    { name: "SAT Exam", path: "/sat" },
+    { name: "About", path: "/about" },
+    { name: "Verify Certificate", path: "/verify" },
+    { name: "Contact", path: "/contacts" },
+  ];
 
   // ---------- Check login state ----------
   useEffect(() => {
