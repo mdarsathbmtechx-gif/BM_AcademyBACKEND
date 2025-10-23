@@ -1,6 +1,7 @@
 from django.urls import path, include
 from .views import CourseListCreateAPIView, CourseRetrieveUpdateDeleteView, CourseDetailAPIView, BannerListAPIView
 from .views import create_order, confirm_payment
+from . import views
 
 
 urlpatterns = [
@@ -13,5 +14,7 @@ urlpatterns = [
     # FIXED ROUTES
     path('api/courses/create_order/', create_order, name='create_order'),
     path('api/courses/confirm_payment/', confirm_payment, name='confirm_payment'),
+    path("api/enroll-course/", views.enroll_course, name="enroll_course"),
+    path("api/my-courses/", views.my_courses, name="my_courses"),
 ]
 

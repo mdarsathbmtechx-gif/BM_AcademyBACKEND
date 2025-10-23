@@ -1,18 +1,17 @@
 // src/components/Payments/Payments.jsx
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import API from "../../api";
+import API from "../../api"; // ✅ Import your axios instance
 
 export default function Payments() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { course } = location.state || {}; // course must be passed via state
-
+  const { course } = location.state || {};
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!token) navigate("/login"); // redirect if not logged in
-    if (!course) navigate("/courses"); // redirect if no course selected
+    if (!token) navigate("/login");
+    if (!course) navigate("/courses");
   }, [course, token, navigate]);
 
   const loadRazorpayScript = () =>
@@ -39,36 +38,27 @@ export default function Payments() {
       description: `Enroll in ${course.title}`,
       image: "/logo.png",
       handler: async function (response) {
-        console.log("Payment Success:", response);
+        console.log("✅ Payment Success:", response);
 
         try {
           const payload = {
-            course: course.id,
+            course_id: course.id, // ✅ backend expects course_id
             payment_id: response.razorpay_payment_id,
           };
 
-          console.log("Sending enrollment payload:", payload);
-          console.log("Token used:", token);
+          console.log("📦 Sending enrollment payload:", payload);
 
-          const backendRes = await API.post("enrollments/", payload, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const backendRes = await API.post("enroll-course/", payload, {
+  headers: { Authorization: `Bearer ${token}` },
+});
 
-          console.log("Backend enrollment response:", backendRes.data);
+
+          console.log("🎉 Enrollment successful:", backendRes.data);
           alert("Payment successful! You are now enrolled.");
-
-          navigate("/dashboard/student", { state: { newCourse: course } });
+          navigate("/dashboard/student");
         } catch (err) {
-          console.error(
-            "Enrollment failed:",
-            err.response?.data || err.message || err
-          );
-          const backendError =
-            err.response?.data?.detail ||
-            err.response?.data ||
-            err.message ||
-            "Unknown error";
-          alert(`Payment succeeded but enrollment failed: ${backendError}`);
+          console.error("❌ Enrollment failed:", err);
+          alert("Payment succeeded but enrollment failed. Contact support.");
         }
       },
       prefill: {

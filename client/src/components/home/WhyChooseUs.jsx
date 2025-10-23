@@ -31,12 +31,9 @@ export default function WhyChooseUs() {
 
   return (
     <section className="relative bg-gradient-to-r from-gray-900 via-black to-gray-900 py-16 sm:py-20 px-4 sm:px-6 lg:px-20 text-center text-white overflow-hidden">
-      {/* Glow effect background */}
-      <div className="absolute inset-0 bg-gradient-radial from-yellow-400/20 to-transparent blur-3xl animate-pulse -z-10"></div>
-
       <div className="relative max-w-7xl mx-auto text-center">
         {/* Heading */}
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-yellow-400 drop-shadow-lg animate-pulse">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-yellow-400 drop-shadow-lg">
           Why Choose <span className="text-white">BM Academy?</span>
         </h2>
 
@@ -46,8 +43,7 @@ export default function WhyChooseUs() {
             <div
               key={index}
               className={`p-6 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-xl border border-gray-700 transition-all duration-500 transform cursor-pointer
-              ${hoverIndex === index ? "border-yellow-400 shadow-yellow-400/40 -translate-y-2 scale-105" : ""}
-              `}
+              ${hoverIndex === index ? "border-yellow-400 shadow-yellow-400/40 -translate-y-2 scale-105" : ""}`}
               onMouseEnter={() => setHoverIndex(index)}
               onMouseLeave={() => setHoverIndex(null)}
               onTouchStart={() => setHoverIndex(index)}
