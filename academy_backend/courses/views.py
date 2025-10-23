@@ -394,3 +394,54 @@ def confirm_payment(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+
+
+
+# views.py
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Course, EnrolledCourse
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def enroll_course(request):
+    user = request.user
+    course_id = request.data.get("course_id")
+    
+    # check if course exists in MongoDB
+    try:
+        course = Course.objects.get(id=course_id)
+    except Course.DoesNotExist:
+        return Response({"success": False, "message": "Course not found."}, status=404)
+
+    # check if user already enrolled
+    if EnrolledCourse.objects.filter(user=user, course_id=str(course.id)).exists():
+        return Response({"success": False, "message": "Already enrolled."})
+
+    # create enrollment record
+    EnrolledCourse.objects.create(user=user, course_id=str(course.id))
+    return Response({"success": True, "message": "Course enrolled successfully."})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_courses(request):
+    user = request.user
+    enrolled = EnrolledCourse.objects.filter(user=user)
+    course_ids = [e.course_id for e in enrolled]
+
+    # fetch details from MongoDB
+    courses = Course.objects.filter(id__in=course_ids)
+    data = []
+    for c in courses:
+        data.append({
+            "id": str(c.id),
+            "title": c.title,
+            "description": c.description,
+            "price": c.price,
+            "image_url": c.image_url,
+            "duration": c.duration,
+            "modules": c.modules,
+        })
+    return Response(data)
