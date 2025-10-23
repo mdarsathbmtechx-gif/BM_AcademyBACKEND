@@ -11,7 +11,7 @@ export default function Sidebar({ onNavigate, current }) {
   ];
 
   return (
-    <aside className="mt-18 w-64 bg-[#0f172a] text-white flex flex-col py-6 px-4 shadow-lg">
+    <aside className="w-64 bg-[#0f172a] text-white flex flex-col py-6 px-4 shadow-lg">
       <h1 className="pt-16 text-2xl font-bold mb-8 text-yellow-400 text-center">
         BM Academy
       </h1>
