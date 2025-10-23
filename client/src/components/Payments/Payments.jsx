@@ -70,16 +70,17 @@ export default function Payments() {
           try {
             // 3️⃣ Confirm enrollment
             const r = await fetch(
-              `${import.meta.env.VITE_BASE_URI}enroll_course/`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ course_id: course.id }),
-              }
-            );
+  `${import.meta.env.VITE_BASE_URI}courses/create_order/`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify({ course_id: course.id }),
+  }
+);
+
 
             if (!r.ok) {
               const errText = await r.text();
