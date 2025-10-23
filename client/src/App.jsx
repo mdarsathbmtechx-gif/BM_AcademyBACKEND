@@ -44,6 +44,7 @@ export const App = () => {
                 <Route path="/" element={<HomeRoutes />} />
                 <Route path="/about" element={<Aboutroutes />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                
 
 <Route
   path="/courses/*"
@@ -61,6 +62,7 @@ export const App = () => {
                 <Route path="/dashboard/student" element={<StudentDashboard />} />
                 <Route path="/forgotpassword" element={<ForgotPassword />} />
                 <Route path="/verify" element={<Certificateroutes />} />
+                <Route path="/payments/*" element={<PaymentRoutes />} />
               </Routes>
               <Footer />
             </>
