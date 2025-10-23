@@ -11,6 +11,7 @@ export default function Payments() {
     if (!course) navigate("/courses");
   }, [course, navigate]);
 
+  // Load Razorpay SDK
   const loadRazorpayScript = () =>
     new Promise((resolve) => {
       const script = document.createElement("script");
@@ -20,13 +21,10 @@ export default function Payments() {
       document.body.appendChild(script);
     });
 
-  const handlePayment = async () => {
-    const loaded = await loadRazorpayScript();
-    if (!loaded) return alert("Razorpay SDK failed to load. Are you online?");
-
+  // Call backend to create Razorpay order
+  const createOrder = async () => {
     try {
-      // 1️⃣ Create order on backend
-      const orderRes = await fetch(`${import.meta.env.VITE_BASE_URI}create_order/`, {
+      const res = await fetch(`${import.meta.env.VITE_BASE_URI}create_order/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,62 +33,82 @@ export default function Payments() {
         body: JSON.stringify({ course_id: course.id }),
       });
 
-      const orderData = await orderRes.json();
-      if (!orderData.order_id) return alert(orderData.error || "Order creation failed");
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP ${res.status}: ${text}`);
+      }
 
-      // 2️⃣ Configure Razorpay options
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY,
-        amount: orderData.amount,
-        currency: "INR",
-        name: "BM Academy",
-        description: `Enroll in ${course.title}`,
-        image: import.meta.env.VITE_BASE_URI + "/logo.png", // HTTPS-safe logo
-        order_id: orderData.order_id,
-        handler: async function (response) {
-          try {
-            // 3️⃣ Confirm payment on backend
-            const confirmRes = await fetch(`${import.meta.env.VITE_BASE_URI}confirm_payment/`, {
+      const data = await res.json();
+      return data.order_id;
+    } catch (err) {
+      console.error("Create order error:", err);
+      alert("Payment initiation failed. Check console for details.");
+      return null;
+    }
+  };
+
+  const handlePayment = async () => {
+    const loaded = await loadRazorpayScript();
+    if (!loaded) return alert("Razorpay SDK failed to load. Are you online?");
+
+    const orderId = await createOrder();
+    if (!orderId) return;
+
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY,
+      amount: course.price * 100,
+      currency: "INR",
+      name: "BM Academy",
+      description: `Enroll in ${course.title}`,
+      image: "/logo.png", // make sure logo.png is in the public folder
+      order_id: orderId,
+      handler: async function (response) {
+        console.log("Payment Success:", response);
+
+        try {
+          // Confirm enrollment on backend
+          const r = await fetch(
+            `${import.meta.env.VITE_BASE_URI}enroll_course/`,
+            {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-
-            const confirmData = await confirmRes.json();
-
-            if (confirmData.message || confirmData.success) {
-              alert(confirmData.message || "Payment successful! You are now enrolled.");
-            } else {
-              alert(confirmData.error || "Payment verification failed.");
+              body: JSON.stringify({ course_id: course.id }),
             }
-          } catch (err) {
-            console.error("Payment verification error:", err);
-            alert("Payment verification failed. Check console for details.");
+          );
+
+          if (!r.ok) {
+            const errText = await r.text();
+            throw new Error(`HTTP ${r.status}: ${errText}`);
           }
 
-          navigate("/dashboard/student");
-        },
-        prefill: {
-          name: JSON.parse(localStorage.getItem("user"))?.name || "",
-          email: JSON.parse(localStorage.getItem("user"))?.email || "",
-        },
-        theme: { color: "#FACC15" },
-      };
+          const data = await r.json();
 
-      // 4️⃣ Open Razorpay checkout
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
-    } catch (err) {
-      console.error("Payment initiation error:", err);
-      alert("Payment initiation failed. Check console for details.");
-    }
+          if (data.success) {
+            alert("Payment successful! You are now enrolled.");
+          } else {
+            alert(data.message || "Enrollment failed.");
+          }
+        } catch (err) {
+          console.error("Enrollment error:", err);
+          alert(
+            "Enrollment failed. Check console for details (CORS, token, or network issue)."
+          );
+        }
+
+        navigate("/dashboard/student");
+      },
+      prefill: {
+        name: JSON.parse(localStorage.getItem("user"))?.name || "",
+        email: JSON.parse(localStorage.getItem("user"))?.email || "",
+      },
+      theme: { color: "#FACC15" },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
   };
 
   if (!course) return null;
