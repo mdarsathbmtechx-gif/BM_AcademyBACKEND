@@ -42,7 +42,7 @@ export default function WhyChooseUs() {
           {highlights.map((item, index) => (
             <div
               key={index}
-              className={`p-6 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-xl border border-gray-700 transition-all duration-500 transform cursor-pointer
+              className={`p-6 rounded-2xl bg-gray-800 shadow-xl border border-gray-700 transition-all duration-500 transform cursor-pointer
               ${hoverIndex === index ? "border-yellow-400 shadow-yellow-400/40 -translate-y-2 scale-105" : ""}`}
               onMouseEnter={() => setHoverIndex(index)}
               onMouseLeave={() => setHoverIndex(null)}
