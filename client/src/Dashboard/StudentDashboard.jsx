@@ -15,10 +15,14 @@ export default function StudentDashboard() {
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/login" />;
 
-  // Append newly purchased course passed via navigation state
+  // Add new course from Payments.jsx navigation state
   useEffect(() => {
     if (location.state?.newCourse) {
-      setEnrolledCourses(prev => [...prev, location.state.newCourse]);
+      setEnrolledCourses(prev => {
+        // Avoid duplicates
+        const exists = prev.some(c => c.id === location.state.newCourse.id);
+        return exists ? prev : [...prev, location.state.newCourse];
+      });
     }
   }, [location.state]);
 
@@ -29,8 +33,9 @@ export default function StudentDashboard() {
         setLoading(true);
         const [coursesRes, enrollRes] = await Promise.all([
           API.get("courses/"),
-          API.get("enrollments/"),
+          API.get("enrollments/", { headers: { Authorization: `Bearer ${token}` } }),
         ]);
+
         setCourses(Array.isArray(coursesRes.data) ? coursesRes.data : []);
         setEnrolledCourses(Array.isArray(enrollRes.data) ? enrollRes.data : []);
       } catch (err) {
@@ -40,13 +45,17 @@ export default function StudentDashboard() {
       }
     };
     fetchCourses();
-  }, []);
+  }, [token]);
 
   const handleEnroll = async (courseId) => {
     try {
-      await API.post("enrollments/", { course: courseId });
+      await API.post(
+        "enrollments/",
+        { course: courseId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       alert("Enrolled successfully!");
-      const enrolledRes = await API.get("enrollments/");
+      const enrolledRes = await API.get("enrollments/", { headers: { Authorization: `Bearer ${token}` } });
       setEnrolledCourses(Array.isArray(enrolledRes.data) ? enrolledRes.data : []);
     } catch (err) {
       console.error(err.response?.data || err);

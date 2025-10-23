@@ -1,26 +1,28 @@
 // src/components/Payments/Payments.jsx
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import API from "../api";
+import API from "../../api";
 
 export default function Payments() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { course } = location.state || {};
+  const { course } = location.state || {}; // course must be passed via state
+
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!course) navigate("/courses"); // redirect if no course info
-  }, [course, navigate]);
+    if (!token) navigate("/login"); // redirect if not logged in
+    if (!course) navigate("/courses"); // redirect if no course selected
+  }, [course, token, navigate]);
 
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
+  const loadRazorpayScript = () =>
+    new Promise((resolve) => {
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
       document.body.appendChild(script);
     });
-  };
 
   const handlePayment = async () => {
     const res = await loadRazorpayScript();
@@ -31,25 +33,42 @@ export default function Payments() {
 
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY,
-      amount: course.price * 100, // in paise
+      amount: course.price * 100,
       currency: "INR",
       name: "BM Academy",
       description: `Enroll in ${course.title}`,
       image: "/logo.png",
-      order_id: "", // optional: backend generated order_id
       handler: async function (response) {
         console.log("Payment Success:", response);
 
         try {
-          // Call backend to save enrollment
-          await API.post("enrollments/", { course: course.id, paymentId: response.razorpay_payment_id });
+          const payload = {
+            course: course.id,
+            payment_id: response.razorpay_payment_id,
+          };
 
-          alert("Payment Successful! You are now enrolled.");
-          // Navigate to dashboard and pass new course via state
+          console.log("Sending enrollment payload:", payload);
+          console.log("Token used:", token);
+
+          const backendRes = await API.post("enrollments/", payload, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          console.log("Backend enrollment response:", backendRes.data);
+          alert("Payment successful! You are now enrolled.");
+
           navigate("/dashboard/student", { state: { newCourse: course } });
         } catch (err) {
-          console.error(err.response?.data || err);
-          alert("Payment succeeded but enrollment failed. Contact support.");
+          console.error(
+            "Enrollment failed:",
+            err.response?.data || err.message || err
+          );
+          const backendError =
+            err.response?.data?.detail ||
+            err.response?.data ||
+            err.message ||
+            "Unknown error";
+          alert(`Payment succeeded but enrollment failed: ${backendError}`);
         }
       },
       prefill: {
@@ -70,7 +89,9 @@ export default function Payments() {
       <div className="bg-white shadow-lg rounded-xl p-8 max-w-md w-full text-center">
         <h1 className="text-2xl font-bold mb-4">Enroll in {course.title}</h1>
         <p className="text-gray-700 mb-6">{course.description}</p>
-        <p className="text-xl font-semibold text-green-600 mb-6">Price: ₹{course.price}</p>
+        <p className="text-xl font-semibold text-green-600 mb-6">
+          Price: ₹{course.price}
+        </p>
         <button
           onClick={handlePayment}
           className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-3 rounded-lg shadow"
