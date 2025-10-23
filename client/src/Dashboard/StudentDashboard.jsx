@@ -137,7 +137,7 @@ export default function StudentDashboard() {
 
             {/* Available Courses */}
             <section>
-              <h3 className="text-xl font-semibold mb-4 text-gray-800">
+              <h3 className="pt-18 text-xl font-semibold mb-4 text-gray-800">
                 Available Courses
               </h3>
               {courses.length === 0 ? (
