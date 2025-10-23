@@ -4,7 +4,7 @@ import { FaGraduationCap } from "react-icons/fa6";
 import { FaLocationDot } from "react-icons/fa6";
 import { FaHandPointRight } from "react-icons/fa";
 import { FiTarget } from "react-icons/fi";
-import HeroImg from "../../assets/img/hero academy.jpg";
+import HeroImg from "../../assets/img/hero-academy.jpg";
 
 
 export default function HeroSection() {
