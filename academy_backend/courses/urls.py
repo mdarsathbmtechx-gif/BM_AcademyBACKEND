@@ -15,11 +15,3 @@ urlpatterns = [
     path('api/courses/confirm_payment/', confirm_payment, name='confirm_payment'),
 ]
 
-from django.urls import path
-from . import views
-
-urlpatterns = [
-    path("create_order/", views.create_order),
-    path("confirm_payment/", views.confirm_payment),
-    path("enroll_course/", views.enroll_course),
-]
