@@ -13,14 +13,16 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const navLinks = [
-    { name: "Courses", path: "/courses" },
-    { name: "SACT Test", path: "/sact" },
-    { name: "SAT Exam", path: "/sat" },
-    { name: "About", path: "/about" },
-    { name: "Verify Certificate", path: "/verify" },
-    { name: "Contact", path: "/contacts" },
-  ];
+ const navLinks = [
+  { name: "Courses", path: "/courses" },
+  { name: "SACT Test", path: "https://scat-topaz.vercel.app/Sact.html", external: true },
+  { name: "SAT Exam", path: "https://sample-sat.vercel.app/", external: true },
+  { name: "About", path: "/about" },
+  { name: "Verify Certificate", path: "/verify" },
+  { name: "Contact", path: "/contacts" },
+];
+
+
 
   // ---------- Check login state ----------
   useEffect(() => {
@@ -142,12 +144,12 @@ export default function Navbar() {
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg">
                     <Link
-  to="/dashboard/student"
-  className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-  onClick={() => setDropdownOpen(false)}
->
-  Dashboard
-</Link>
+                      to="/dashboard/student"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
 
                     <button
                       onClick={handleLogout}
@@ -180,9 +182,8 @@ export default function Navbar() {
         />
       )}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:hidden ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">Menu</h2>
