@@ -7,15 +7,13 @@ export default function Payments() {
   const navigate = useNavigate();
   const { course } = location.state || {};
   
-  const user = JSON.parse(localStorage.getItem("user")) || {};
-
   useEffect(() => {
     if (!course) {
+      // If no course info, redirect back
       navigate("/courses");
     }
   }, [course, navigate]);
 
-  // Load Razorpay SDK dynamically
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
       const script = document.createElement("script");
@@ -26,73 +24,32 @@ export default function Payments() {
     });
   };
 
-  // Create order in backend
-  const createOrder = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_BASE_URI}create_order/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ course_id: course.id }),
-      });
-      return res.json();
-    } catch (err) {
-      console.error("Failed to create order:", err);
-      return null;
-    }
-  };
-
-  // Enroll user after payment
-  const enrollCourse = async () => {
-    try {
-      await fetch(`${import.meta.env.VITE_BASE_URI}enroll_course/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ course_id: course.id }),
-      });
-    } catch (err) {
-      console.error("Failed to enroll course:", err);
-    }
-  };
-
   const handlePayment = async () => {
     const res = await loadRazorpayScript();
+
     if (!res) {
       alert("Razorpay SDK failed to load. Are you online?");
       return;
     }
 
-    const orderData = await createOrder();
-    if (!orderData || !orderData.order_id) {
-      alert("Failed to create order. Try again.");
-      return;
-    }
-
+    // You should call your backend to create an order and get `order_id`
+    // For demo purposes, using dummy values
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY, // from .env
-      amount: course.price * 100, // in paise
+      key: import.meta.env.VITE_RAZORPAY_KEY, // Add your Razorpay key in .env
+      amount: course.price * 100, // Amount in paise
       currency: "INR",
       name: "BM Academy",
       description: `Enroll in ${course.title}`,
-      image: "/logo.png",
-      order_id: orderData.order_id,
-      handler: async function (response) {
+      image: "/logo.png", // Optional: logo in header
+      order_id: "", // Fill with your backend generated order_id if available
+      handler: function (response) {
         console.log("Payment Success:", response);
-
-        // Enroll user in course
-        await enrollCourse();
-
         alert("Payment Successful! Payment ID: " + response.razorpay_payment_id);
         navigate("/dashboard/student");
       },
       prefill: {
-        name: user.name || "",
-        email: user.email || "",
+        name: course.user_name || "", // Optional
+        email: course.user_email || "", // Optional
       },
       theme: {
         color: "#FACC15",
