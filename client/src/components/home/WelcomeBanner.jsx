@@ -6,7 +6,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import AcademyBanner from "../../assets/img/Academy-banner.jpg";
+import AcademyBanner from "../../../public/img/Academy-banner.jpg";
 
 
 // Icons
