@@ -5,6 +5,7 @@ import Layout from "./Components/Layout/Layout";
 import Dashboard from "./Components/Pages/Dashboard";
 import AdminLogin from "./Components/Login";
 import Users from "./Components/Pages/Users";
+import Certificate from "./Components/Pages/Certificate";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -66,9 +67,25 @@ function App() {
             )
           }
         />
+        <Route
+  path="/certificates"
+  element={
+    isAuthenticated ? (
+      <Layout>
+        <Certificate />
+      </Layout>
+    ) : (
+      <Navigate to="/login" replace />
+    )
+  }
+/>
+
+
+        
 
         {/* Catch-all route: redirect unknown URLs to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
+
       </Routes>
     </Router>
   );

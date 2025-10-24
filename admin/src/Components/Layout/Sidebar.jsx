@@ -6,12 +6,14 @@ import {
   FaBook,
   FaSignOutAlt,
   FaBars,
+  FaCertificate,
 } from "react-icons/fa";
 
 export default function Sidebar() {
   const navigate = useNavigate();
   const email = localStorage.getItem("user_email");
 
+  // Collapsed state persists in localStorage
   const [collapsed, setCollapsed] = useState(
     JSON.parse(localStorage.getItem("sidebar_collapsed")) || false
   );
@@ -20,14 +22,12 @@ export default function Sidebar() {
     localStorage.setItem("sidebar_collapsed", JSON.stringify(collapsed));
   }, [collapsed]);
 
+  // Only collapse automatically on mobile (<768px) initially
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) setCollapsed(true);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    if (window.innerWidth < 768 && !collapsed) {
+      setCollapsed(true);
+    }
+  }, []); // run once on mount
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
@@ -90,6 +90,7 @@ export default function Sidebar() {
         <SidebarLink to="/dashboard" icon={FaTachometerAlt} label="Dashboard" />
         <SidebarLink to="/courses" icon={FaBook} label="Courses" />
         <SidebarLink to="/users" icon={FaUsers} label="Users" />
+        <SidebarLink to="/certificates" icon={FaCertificate} label="Certificates" />
       </nav>
 
       {/* Bottom - User + Logout */}

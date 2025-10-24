@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { IoIosCall } from "react-icons/io";
 import { FaCheck } from "react-icons/fa6";
 import { FaRocket } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export default function WhyChooseUs() {
   const highlights = [
@@ -67,13 +68,13 @@ export default function WhyChooseUs() {
 
         {/* CTA Buttons */}
         <div className="mt-12 flex flex-col sm:flex-row flex-wrap justify-center gap-4">
-          <a
-            href="#"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform active:scale-95 hover:scale-105"
-          >
-            <FaRocket size={20} />
-            Join Now
-          </a>
+          <Link
+  to="/courses"
+  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform active:scale-95 hover:scale-105"
+>
+  <FaRocket size={20} />
+  Join Now
+</Link>
 
           <a
             href="tel:+91XXXXXXXXXX"

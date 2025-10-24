@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const TrendingCourses = () => {
   const [courses, setCourses] = useState([]);
@@ -131,10 +132,13 @@ const TrendingCourses = () => {
           </div>
 
           <div className="mt-10">
-            <button className="bg-yellow-400 text-black font-bold py-3 px-8 rounded-2xl shadow-lg hover:scale-105 hover:shadow-[0_0_20px_rgba(255,221,0,0.8)] transition-all duration-300">
-              Enroll Now
-            </button>
-          </div>
+  <Link
+    to="/courses"
+    className="bg-yellow-400 text-black font-bold py-3 px-8 rounded-2xl shadow-lg hover:scale-105 hover:shadow-[0_0_20px_rgba(255,221,0,0.8)] transition-all duration-300 inline-block text-center"
+  >
+    Enroll Now
+  </Link>
+</div>
         </div>
       </section>
     </section>
