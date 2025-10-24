@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'courses',
     'users',
     'contact',
+    'certificates',
 ]
 
 # ------------------------
