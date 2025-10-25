@@ -139,16 +139,16 @@ def profile_api(request):
     return JsonResponse({"email": user.email, "role": user.role})
 
 
-# ----------------- Admin Login DRF Style -----------------
+# views.py
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.http import JsonResponse
 from .models import User  # MongoEngine User
-from .utils import create_jwt  # instead of generate_jwt
+from .utils import create_jwt
 import json
 
 class AdminLoginAPIView(APIView):
-    permission_classes = [AllowAny]  # public endpoint
+    permission_classes = [AllowAny]
 
     def post(self, request):
         try:
@@ -159,15 +159,11 @@ class AdminLoginAPIView(APIView):
             if not email or not password:
                 return JsonResponse({"error": "Email and password required"}, status=400)
 
-            # Fetch admin from MongoEngine
             user = User.objects(email=email, role="admin").first()
             if not user or not user.check_password(password):
-                return JsonResponse(
-                    {"detail": "Admin not found or invalid credentials"}, status=404
-                )
+                return JsonResponse({"detail": "Invalid credentials"}, status=401)
 
-            # Generate JWT token
-            access_token = generate_jwt(user)
+            access_token = create_jwt(user)
 
             return JsonResponse({
                 "message": "Admin login successful",
@@ -200,17 +196,42 @@ def list_users(request):
             for user in users
         ]
         return JsonResponse(users_list, safe=False)
+    
+    
+# users/views.py
 # users/views.py
 from django.http import JsonResponse
-from users.models import User
-from courses.models import EnrolledCourse, Course  # import your course model
+from users.models import User as MongoUser  # MongoEngine User model
+from courses.models import EnrolledCourse
 
 def list_users_with_courses(request):
+    """
+    Returns all users along with their enrolled courses.
+    Format:
+    [
+        {
+            "id": "<user_id>",
+            "name": "<user_name>",
+            "email": "<user_email>",
+            "phone": "<user_phone>",
+            "enrolled_courses": [
+                {
+                    "id": "<course_id>",
+                    "title": "<course_title>",
+                    "enrolled_at": "<ISO datetime>"
+                },
+                ...
+            ]
+        },
+        ...
+    ]
+    """
     if request.method == "GET":
-        users = User.objects.all()
+        users = MongoUser.objects.all()
         users_list = []
 
         for user in users:
+            # Fetch enrolled courses for this user
             enrolled = EnrolledCourse.objects(user=user)
             courses_list = [
                 {

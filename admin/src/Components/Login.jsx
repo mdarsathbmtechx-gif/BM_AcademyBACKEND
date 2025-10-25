@@ -14,7 +14,8 @@ export default function AdminLogin({ onLogin }) {
 
   try {
     // Construct URL safely
-    const loginUrl = `${import.meta.env.VITE_BASE_URI}/users/admin/login/`;
+// Remove any double slashes
+    const loginUrl = `${import.meta.env.VITE_BASE_URI.replace(/\/$/, '')}/users/admin/login/`;
     console.log("Admin login URL:", loginUrl);
 
     // Send login request

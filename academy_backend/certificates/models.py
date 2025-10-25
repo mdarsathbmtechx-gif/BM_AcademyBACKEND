@@ -1,11 +1,12 @@
+# certificates/models.py
 from django.db import models
-from django.contrib.auth.models import User
 
 class Certificate(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    course_id = models.CharField(max_length=24)  # MongoDB ObjectId
+    user_id = models.CharField(max_length=24)  # MongoDB User ObjectId
+    course_id = models.CharField(max_length=24)  # MongoDB Course ObjectId
+    certificate_id = models.CharField(max_length=50, unique=True, blank=True)
     issue_date = models.DateTimeField(auto_now_add=True)
-    file = models.FileField(upload_to='certificates/', null=True, blank=True)
+    file = models.FileField(upload_to="certificates/", null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.course_id}"
+        return f"User {self.user_id} - Course {self.course_id}"

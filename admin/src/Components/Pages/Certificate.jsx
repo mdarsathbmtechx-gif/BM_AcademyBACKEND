@@ -1,53 +1,61 @@
 import React, { useEffect, useState } from "react";
-import API from "../../api"; // Make sure src/api.js exists
+import axios from "axios";
 import { toast } from "react-toastify";
+
+// Axios instance with dynamic Authorization header
+const API = axios.create({
+  baseURL: import.meta.env.VITE_BASE_URI,
+  headers: { "Content-Type": "application/json" },
+});
+
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default function Certificate() {
   const [certificates, setCertificates] = useState([]);
   const [users, setUsers] = useState([]);
-  const [courses, setCourses] = useState([]);
-  const [formData, setFormData] = useState({
-    user: "",
-    course: "",
-  });
+  const [formData, setFormData] = useState({ user: "", course: "" });
   const [loading, setLoading] = useState(false);
 
-  // Fetch initial data
   useEffect(() => {
     fetchCertificates();
-    fetchUsers();
-    fetchCourses();
+    fetchUsersWithCourses();
   }, []);
 
-  // -------------------- Fetch Functions --------------------
   const fetchCertificates = async () => {
     try {
       const res = await API.get("/certificates/");
-      setCertificates(res.data);
+      setCertificates(res.data.data || res.data);
     } catch (err) {
-      toast.error("Failed to load certificates");
+      console.error(err);
+      toast.error(
+        err.response?.status === 403
+          ? "Access denied. Admin token required."
+          : "Failed to fetch certificates"
+      );
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsersWithCourses = async () => {
     try {
-      const res = await API.get("/users/"); // Adjust this path if your user endpoint differs
-      setUsers(res.data);
-    } catch {
-      toast.error("Failed to load users");
+      const res = await API.get("/users/list-with-courses/");
+      setUsers(res.data.data || res.data);
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err.response?.status === 403
+          ? "Access denied. Admin token required."
+          : "Failed to fetch users"
+      );
     }
   };
 
-  const fetchCourses = async () => {
-    try {
-      const res = await API.get("/courses/"); // Adjust to match your API route
-      setCourses(res.data);
-    } catch {
-      toast.error("Failed to load courses");
-    }
-  };
-
-  // -------------------- Issue Certificate --------------------
   const handleIssue = async () => {
     if (!formData.user || !formData.course) {
       toast.warn("Please select both user and course");
@@ -57,50 +65,56 @@ export default function Certificate() {
     setLoading(true);
     try {
       const payload = {
-        ...formData,
-        certificate_id: "CERT" + Date.now(),
+        user_id: formData.user,
+        course_id: formData.course,
       };
 
-      await API.post("/certificates/", payload);
-      toast.success("Certificate issued successfully!");
+      const res = await API.post("/certificates/", payload);
+      toast.success(res.data.message || "Certificate issued successfully!");
       setFormData({ user: "", course: "" });
       fetchCertificates();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to issue certificate");
+      toast.error(
+        err.response?.data?.message || "Failed to issue certificate"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // -------------------- Render --------------------
+  const enrolledCourses = formData.user
+    ? users.find((u) => String(u.id) === String(formData.user))
+        ?.enrolled_courses || []
+    : [];
+
   return (
     <div className="p-8">
-      <h2 className="text-3xl font-bold mb-6 text-gray-800">
-        🎓 Issue Certificates
-      </h2>
+      <h2 className="text-3xl font-bold mb-6 text-gray-800">🎓 Issue Certificates</h2>
 
-      {/* Issue Form */}
+      {/* Form */}
       <div className="bg-white shadow-md rounded-2xl p-6 mb-8 border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* User Dropdown */}
+          {/* User select */}
           <div>
             <label className="block text-sm font-medium mb-2">Select User</label>
             <select
               value={formData.user}
-              onChange={(e) => setFormData({ ...formData, user: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, user: e.target.value, course: "" })
+              }
               className="w-full border rounded-lg p-2 focus:ring focus:ring-yellow-300"
             >
               <option value="">-- Select User --</option>
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
-                  {user.username || user.email}
+                  {user.name || user.email}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Course Dropdown */}
+          {/* Course select */}
           <div>
             <label className="block text-sm font-medium mb-2">Select Course</label>
             <select
@@ -109,21 +123,26 @@ export default function Certificate() {
                 setFormData({ ...formData, course: e.target.value })
               }
               className="w-full border rounded-lg p-2 focus:ring focus:ring-yellow-300"
+              disabled={!formData.user || enrolledCourses.length === 0}
             >
-              <option value="">-- Select Course --</option>
-              {courses.map((course) => (
+              <option value="">
+                {enrolledCourses.length === 0
+                  ? "No enrolled courses"
+                  : "-- Select Course --"}
+              </option>
+              {enrolledCourses.map((course) => (
                 <option key={course.id} value={course.id}>
-                  {course.name}
+                  {course.title}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Issue Button */}
+          {/* Issue button */}
           <div className="flex items-end">
             <button
               onClick={handleIssue}
-              disabled={loading}
+              disabled={loading || !formData.user || !formData.course}
               className={`w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 px-4 rounded-lg shadow ${
                 loading && "opacity-70 cursor-not-allowed"
               }`}
@@ -136,14 +155,10 @@ export default function Certificate() {
 
       {/* Certificates Table */}
       <div className="bg-white shadow-md rounded-2xl p-6 border">
-        <h3 className="text-xl font-semibold mb-4 text-gray-700">
-          Issued Certificates
-        </h3>
+        <h3 className="text-xl font-semibold mb-4 text-gray-700">Issued Certificates</h3>
 
         {certificates.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">
-            No certificates issued yet.
-          </p>
+          <p className="text-gray-500 text-center py-4">No certificates issued yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full border border-gray-200">
@@ -152,21 +167,18 @@ export default function Certificate() {
                   <th className="py-2 px-4 border">#</th>
                   <th className="py-2 px-4 border text-left">User</th>
                   <th className="py-2 px-4 border text-left">Course</th>
+                  <th className="py-2 px-4 border text-left">Certificate ID</th> {/* NEW */}
                   <th className="py-2 px-4 border">Issued On</th>
                   <th className="py-2 px-4 border">Certificate</th>
                 </tr>
               </thead>
               <tbody>
                 {certificates.map((cert, index) => (
-                  <tr
-                    key={cert.id}
-                    className="hover:bg-gray-50 transition duration-150"
-                  >
-                    <td className="py-2 px-4 border text-center">
-                      {index + 1}
-                    </td>
+                  <tr key={cert.id || index} className="hover:bg-gray-50 transition duration-150">
+                    <td className="py-2 px-4 border text-center">{index + 1}</td>
                     <td className="py-2 px-4 border">{cert.user_name}</td>
                     <td className="py-2 px-4 border">{cert.course_name}</td>
+                    <td className="py-2 px-4 border">{cert.certificate_id}</td> {/* NEW */}
                     <td className="py-2 px-4 border text-center">
                       {new Date(cert.issue_date).toLocaleDateString()}
                     </td>

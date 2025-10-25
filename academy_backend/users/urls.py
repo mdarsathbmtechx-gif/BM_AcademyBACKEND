@@ -22,6 +22,6 @@ urlpatterns = [
     path("list-with-courses/", list_users_with_courses),
 
     # Admin endpoint
-    path('admin/login/', AdminLoginAPIView.as_view(), name='admin-login'),
     path('create-temp-admin/', CreateTempAdminView.as_view(), name='create-temp-admin'),
+    path("admin/login/", AdminLoginAPIView.as_view(), name="admin-login"),
     ]
