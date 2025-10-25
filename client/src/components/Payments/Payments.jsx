@@ -1,7 +1,7 @@
 // src/components/Payments/Payments.jsx
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import API from "../../api"; // ✅ Import your axios instance
+import API from "../../api";
 
 export default function Payments() {
   const location = useLocation();
@@ -9,11 +9,13 @@ export default function Payments() {
   const { course } = location.state || {};
   const token = localStorage.getItem("token");
 
+  // Redirect if not logged in or course missing
   useEffect(() => {
     if (!token) navigate("/login");
     if (!course) navigate("/courses");
   }, [course, token, navigate]);
 
+  // Load Razorpay script dynamically
   const loadRazorpayScript = () =>
     new Promise((resolve) => {
       const script = document.createElement("script");
@@ -26,46 +28,58 @@ export default function Payments() {
   const handlePayment = async () => {
     const res = await loadRazorpayScript();
     if (!res) {
-      alert("Razorpay SDK failed to load. Are you online?");
+      alert("Razorpay SDK failed to load. Check your internet connection.");
+      return;
+    }
+
+    const courseId =
+      course._id?.$oid || // MongoDB _id object
+      (course._id?.toString ? course._id.toString() : null) ||
+      course.id ||
+      null;
+
+    if (!courseId) {
+      alert("Invalid course ID. Contact support.");
       return;
     }
 
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY,
-      amount: course.price * 100,
+      amount: course.price * 100, // in paise
       currency: "INR",
       name: "BM Academy",
       description: `Enroll in ${course.title}`,
       image: "/logo.png",
+      prefill: {
+        name: course.user_name || "",
+        email: course.user_email || "",
+      },
+      theme: { color: "#FACC15" },
       handler: async function (response) {
         console.log("✅ Payment Success:", response);
 
         try {
           const payload = {
-            course_id: course.id, // ✅ backend expects course_id
+            course_id: courseId,
             payment_id: response.razorpay_payment_id,
           };
 
           console.log("📦 Sending enrollment payload:", payload);
 
           const backendRes = await API.post("enroll-course/", payload, {
-  headers: { Authorization: `Bearer ${token}` },
-});
-
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
           console.log("🎉 Enrollment successful:", backendRes.data);
           alert("Payment successful! You are now enrolled.");
           navigate("/dashboard/student");
         } catch (err) {
-          console.error("❌ Enrollment failed:", err);
-          alert("Payment succeeded but enrollment failed. Contact support.");
+          console.error("❌ Enrollment failed:", err.response || err);
+          alert(
+            "Payment succeeded but enrollment failed. Contact support."
+          );
         }
       },
-      prefill: {
-        name: course.user_name || "",
-        email: course.user_email || "",
-      },
-      theme: { color: "#FACC15" },
     };
 
     const paymentObject = new window.Razorpay(options);

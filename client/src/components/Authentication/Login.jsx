@@ -1,3 +1,4 @@
+// src/components/Authentication/Login.jsx
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
@@ -17,27 +18,24 @@ const Login = () => {
     if (auth.isAuthenticated) navigate("/dashboard/student");
   }, [auth, navigate]);
 
-  // ----------------- Helper to store tokens -----------------
-  const storeUserData = (accessToken, refreshToken, user) => {
+  // ✅ Helper to store backend JWT
+  const storeUserData = (accessToken, user) => {
     localStorage.setItem("token", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("user", JSON.stringify(user));
 
     setAuth({
       isAuthenticated: true,
       token: accessToken,
-      refreshToken,
       user,
     });
 
     window.dispatchEvent(new Event("storage"));
   };
 
-  // ----------------- Email/Password Login -----------------
+  // ✅ Email/password login
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URI}users/login/`,
@@ -45,8 +43,8 @@ const Login = () => {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      // Store both access & refresh tokens
-      storeUserData(res.data.access, res.data.refresh, res.data.user);
+      // Your Django login returns { token, user: {...} }
+      storeUserData(res.data.token, res.data.user);
       navigate("/dashboard/student");
     } catch (err) {
       console.error(err.response?.data || err);
@@ -56,20 +54,21 @@ const Login = () => {
     }
   };
 
-  // ----------------- Google Login -----------------
+  // ✅ Google login → backend JWT
   const handleGoogleLogin = async (credentialResponse) => {
-    const token = credentialResponse?.credential;
-    if (!token) return alert("Google credential missing!");
+    const googleToken = credentialResponse?.credential;
+    if (!googleToken) return alert("Google credential missing!");
 
     setLoading(true);
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URI}users/google-login/`,
-        { token },
+        { token: googleToken },
         { headers: { "Content-Type": "application/json" } }
       );
 
-      storeUserData(res.data.access, res.data.refresh, res.data.user);
+      // Your backend returns { access: token, user: {...} }
+      storeUserData(res.data.access, res.data.user);
       navigate("/dashboard/student");
     } catch (err) {
       console.error("Google login failed:", err.response?.data || err.message);

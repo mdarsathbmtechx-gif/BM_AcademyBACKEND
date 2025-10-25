@@ -1,57 +1,59 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-
-const courses = [
-  {
-    title: "🎓 Government Exam Coaching",
-    subtitle: "🏛️ TNPSC Group 2, 4, VAO, SSC, Bank & RRB Exams",
-    overview:
-      "Crack competitive government exams with expert coaching, current affairs updates, and mock test practice.",
-    learn: [
-      "Syllabus-wise coaching (Maths, GS, Tamil, GK)",
-      "TNPSC Group 2, Group 4, VAO",
-      "SSC CHSL, CGL, MTS",
-      "Bank PO, Clerk (IBPS/SBI)",
-      "RRB NTPC & Group D",
-      "Daily Current Affairs + Test Series",
-      "Exam Strategies + Time Management",
-    ],
-    duration: "6 Months (Fast-track: 3 Months)",
-    outcomes: [
-      "✅ Crack State & Central Govt. Exams",
-      "✅ Expert Faculty Support",
-      "✅ Daily/Weekly Tests",
-      "✅ Free SACT Career Test & SAT Scholarship",
-    ],
-    faq: [
-      { q: "Can I take this course online?", a: "Yes, both offline and live online batches are available." },
-    ],
-  },
-  {
-    title: "🎯 Soft Skills & Interview Prep",
-    subtitle: "Job readiness & communication mastery",
-    overview: "Build confidence and communication skills for job readiness.",
-    learn: [
-      "Resume Writing",
-      "Group Discussion Practice",
-      "Interview Techniques (HR + Tech)",
-      "Email, Workplace Etiquette",
-      "English & Tamil Mixed Training",
-    ],
-    duration: "3 Weeks",
-    outcomes: [
-      "✅ Face job interviews confidently",
-      "✅ Build strong resumes and LinkedIn profiles",
-      "✅ Improve speaking skills",
-    ],
-    faq: [
-      { q: "Is this useful for college students and job seekers?", a: "Yes, this course is ideal for freshers and working professionals." },
-    ],
-  },
-];
+import { useLocation } from "react-router-dom";
 
 export default function CoursesSection() {
-  const [openIndex, setOpenIndex] = useState(null);
+  const location = useLocation();
+  const [openIndex, setOpenIndex] = useState(location.state?.courseIndex || null); // only once
+
+  const courses = [
+    {
+      title: "🎓 Government Exam Coaching",
+      subtitle: "🏛️ TNPSC Group 2, 4, VAO, SSC, Bank & RRB Exams",
+      overview:
+        "Crack competitive government exams with expert coaching, current affairs updates, and mock test practice.",
+      learn: [
+        "Syllabus-wise coaching (Maths, GS, Tamil, GK)",
+        "TNPSC Group 2, Group 4, VAO",
+        "SSC CHSL, CGL, MTS",
+        "Bank PO, Clerk (IBPS/SBI)",
+        "RRB NTPC & Group D",
+        "Daily Current Affairs + Test Series",
+        "Exam Strategies + Time Management",
+      ],
+      duration: "6 Months (Fast-track: 3 Months)",
+      outcomes: [
+        "✅ Crack State & Central Govt. Exams",
+        "✅ Expert Faculty Support",
+        "✅ Daily/Weekly Tests",
+        "✅ Free SACT Career Test & SAT Scholarship",
+      ],
+      faq: [
+        { q: "Can I take this course online?", a: "Yes, both offline and live online batches are available." },
+      ],
+    },
+    {
+      title: "🎯 Soft Skills & Interview Prep",
+      subtitle: "Job readiness & communication mastery",
+      overview: "Build confidence and communication skills for job readiness.",
+      learn: [
+        "Resume Writing",
+        "Group Discussion Practice",
+        "Interview Techniques (HR + Tech)",
+        "Email, Workplace Etiquette",
+        "English & Tamil Mixed Training",
+      ],
+      duration: "3 Weeks",
+      outcomes: [
+        "✅ Face job interviews confidently",
+        "✅ Build strong resumes and LinkedIn profiles",
+        "✅ Improve speaking skills",
+      ],
+      faq: [
+        { q: "Is this useful for college students and job seekers?", a: "Yes, this course is ideal for freshers and working professionals." },
+      ],
+    },
+  ];
 
   return (
     <section className="bg-gray-50 py-16 sm:py-20 px-4 sm:px-6 md:px-12">
@@ -79,9 +81,8 @@ export default function CoursesSection() {
 
             {/* Content */}
             <div
-              className={`px-4 sm:px-6 pb-4 sm:pb-6 text-gray-700 transition-all duration-500 ease-in-out overflow-hidden ${
-                openIndex === i ? "max-h-screen" : "max-h-0"
-              }`}
+              className={`px-4 sm:px-6 pb-4 sm:pb-6 text-gray-700 transition-all duration-500 ease-in-out overflow-hidden ${openIndex === i ? "max-h-screen" : "max-h-0"
+                }`}
             >
               {openIndex === i && (
                 <>
@@ -116,9 +117,11 @@ export default function CoursesSection() {
 
                   {/* CTA Buttons */}
                   <div className="flex flex-col sm:flex-row flex-wrap gap-3 mt-4">
-                    <button className="px-5 py-3 rounded-xl bg-yellow-400 text-black font-semibold shadow hover:bg-yellow-500 transition flex-1 text-center">
-                      📞 Talk to a Counselor
-                    </button>
+                    <a href="tel:+919876543210" className="flex-1">
+                      <button className="w-full px-5 py-3 rounded-xl bg-yellow-400 text-black font-semibold shadow hover:bg-yellow-500 transition text-center">
+                        📞 Talk to a Counselor
+                      </button>
+                    </a>
                     <button className="px-5 py-3 rounded-xl bg-black text-white font-semibold shadow hover:bg-gray-800 transition flex-1 text-center">
                       📝 Apply Now
                     </button>

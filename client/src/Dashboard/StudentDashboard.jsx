@@ -7,10 +7,9 @@ import Breadcrumbs from "./Breadcrumbs";
 
 export default function StudentDashboard() {
   const location = useLocation();
-  const [courses, setCourses] = useState([]);
+  const [currentPage, setCurrentPage] = useState("Dashboard");
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState("Dashboard");
 
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/login" />;
@@ -19,49 +18,30 @@ export default function StudentDashboard() {
   useEffect(() => {
     if (location.state?.newCourse) {
       setEnrolledCourses(prev => {
-        // Avoid duplicates
         const exists = prev.some(c => c.id === location.state.newCourse.id);
         return exists ? prev : [...prev, location.state.newCourse];
       });
     }
   }, [location.state]);
 
-  // Fetch courses & enrolled courses from backend
+  // Fetch enrolled courses from backend
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchEnrolledCourses = async () => {
       try {
         setLoading(true);
-        const [coursesRes, enrollRes] = await Promise.all([
-          API.get("courses/"),
-          API.get("enrollments/", { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-
-        setCourses(Array.isArray(coursesRes.data) ? coursesRes.data : []);
-        setEnrolledCourses(Array.isArray(enrollRes.data) ? enrollRes.data : []);
+        const res = await API.get("my-courses/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setEnrolledCourses(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
-        console.error(err.response?.data || err);
+        console.error("Failed to fetch enrolled courses:", err);
+        alert("Failed to load your courses. Please try again.");
       } finally {
         setLoading(false);
       }
     };
-    fetchCourses();
+    fetchEnrolledCourses();
   }, [token]);
-
-  const handleEnroll = async (courseId) => {
-    try {
-      await API.post(
-        "enrollments/",
-        { course: courseId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert("Enrolled successfully!");
-      const enrolledRes = await API.get("enrollments/", { headers: { Authorization: `Bearer ${token}` } });
-      setEnrolledCourses(Array.isArray(enrolledRes.data) ? enrolledRes.data : []);
-    } catch (err) {
-      console.error(err.response?.data || err);
-      alert("Enrollment failed!");
-    }
-  };
 
   const breadcrumb = ["Dashboard"];
   if (currentPage !== "Dashboard") breadcrumb.push(currentPage);
@@ -75,69 +55,44 @@ export default function StudentDashboard() {
 
         {loading ? (
           <div className="text-center text-gray-700">Loading...</div>
-        ) : currentPage === "Courses" ? (
-          <>
-            {/* Enrolled Courses */}
-            <section className="mb-12">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800">Your Enrolled Courses</h3>
-              {enrolledCourses.length === 0 ? (
-                <p className="text-gray-600">You haven't enrolled in any courses yet.</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {enrolledCourses.map((course) => (
-                    <div key={course.id} className="bg-white p-5 rounded-lg shadow hover:shadow-xl transition cursor-default">
-                      <h4 className="font-bold text-lg text-gray-800 mb-2">{course.title}</h4>
-                      <p className="text-gray-600">{course.description}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Courses Table */}
-            <section className="mt-12">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800">Courses Overview</h3>
-              {courses.length === 0 ? (
-                <p className="text-gray-600">No courses available.</p>
-              ) : (
-                <div className="overflow-x-auto bg-white rounded-lg shadow">
-                  <table className="min-w-full text-left border-collapse">
-                    <thead className="bg-gray-100 border-b">
-                      <tr>
-                        <th className="px-6 py-3 text-sm font-semibold text-gray-700">#</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-gray-700">Course Title</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-gray-700">Description</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-gray-700 text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {courses.map((course, index) => (
-                        <tr key={course.id} className="border-b hover:bg-gray-50">
-                          <td className="px-6 py-3">{index + 1}</td>
-                          <td className="px-6 py-3 font-medium text-gray-800">{course.title}</td>
-                          <td className="px-6 py-3 text-gray-600">{course.description}</td>
-                          <td className="px-6 py-3 text-center">
-                            <button
-                              onClick={() => handleEnroll(course.id)}
-                              className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-4 py-1.5 rounded transition"
-                            >
-                              Enroll
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-          </>
+        ) : currentPage === "My Courses" ? (
+          <div className="p-6">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">My Enrolled Courses</h3>
+            {enrolledCourses.length === 0 ? (
+              <p className="text-gray-600">You have not enrolled in any courses yet.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {enrolledCourses.map(course => (
+                  <div key={course.id} className="bg-white shadow-md rounded-lg p-4">
+                    <img
+                      src={course.image_url || "/logo.png"}
+                      alt={course.title}
+                      className="h-40 w-full object-cover rounded-md mb-4"
+                    />
+                    <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+                    <p className="text-gray-600 mb-2">{course.description}</p>
+                    <p className="text-green-600 font-semibold mb-2">₹{course.price}</p>
+                    <p className="text-sm text-gray-500 mb-2">Duration: {course.duration}</p>
+                    <p className="text-sm text-gray-500 mb-2">
+                      Enrolled At: {new Date(course.enrolled_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : currentPage === "Dashboard" ? (
+          <div>
+            <p className="text-gray-600">Welcome to your dashboard! Use the sidebar to explore your courses and profile.</p>
+          </div>
         ) : currentPage === "Profile" ? (
           <div>
             <p className="text-gray-600">Profile section coming soon...</p>
           </div>
         ) : (
-          <p className="text-gray-600">Welcome to your dashboard! Use the sidebar to explore.</p>
+          <div>
+            <p className="text-gray-600">Page not found.</p>
+          </div>
         )}
       </main>
     </div>

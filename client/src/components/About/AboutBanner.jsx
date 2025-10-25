@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const AboutBanner = () => {
   return (
@@ -86,12 +87,12 @@ const AboutBanner = () => {
         <div className="mt-16">
           <h3 className="text-3xl font-bold mb-6">🔗 Explore More</h3>
           <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="#courses"
-              className="px-6 py-3 rounded-xl bg-yellow-400 text-black font-semibold hover:bg-yellow-500"
-            >
-              📘 Browse Our Courses
-            </a>
+            <Link
+  to="/courses"
+  className="px-6 py-3 rounded-xl bg-yellow-400 text-black font-semibold hover:bg-yellow-500"
+>
+  📘 Browse Our Courses
+</Link>
             <a
               href="#career-test"
               className="px-6 py-3 rounded-xl bg-black text-white font-semibold hover:bg-gray-800"

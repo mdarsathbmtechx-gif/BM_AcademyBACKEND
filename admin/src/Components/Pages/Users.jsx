@@ -1,3 +1,4 @@
+// client/src/Admin/Users.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -12,7 +13,7 @@ const Users = () => {
         const token = localStorage.getItem("token");
 
         const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URI}/users/list/`,
+          `${import.meta.env.VITE_BASE_URI.replace(/\/$/, "")}/users/list-with-courses/`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -38,7 +39,7 @@ const Users = () => {
     );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">All Users</h2>
 
       {users.length === 0 ? (
@@ -58,6 +59,9 @@ const Users = () => {
                   Phone
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
+                  Enrolled Courses
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">
                   Actions
                 </th>
               </tr>
@@ -73,6 +77,20 @@ const Users = () => {
                   <td className="px-6 py-4 text-gray-700">{user.name || "N/A"}</td>
                   <td className="px-6 py-4 text-gray-700">{user.email}</td>
                   <td className="px-6 py-4 text-gray-700">{user.phone || "N/A"}</td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {user.enrolled_courses && user.enrolled_courses.length > 0 ? (
+                      <ul className="list-disc pl-5 max-h-32 overflow-y-auto">
+                        {user.enrolled_courses.map((course) => (
+                          <li key={course.id}>
+                            {course.title} -{" "}
+                            {new Date(course.enrolled_at).toLocaleDateString()}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-500">No enrolled courses</p>
+                    )}
+                  </td>
                   <td className="px-6 py-4">
                     <button
                       onClick={() =>

@@ -9,6 +9,7 @@ from .views import (
 )
 from users import views
 from .views import CreateTempAdminView
+from .views import list_users_with_courses
 
 
 urlpatterns = [
@@ -18,6 +19,7 @@ urlpatterns = [
     path('google-login/', google_login_api, name='google-login'),
     path('profile/', profile_api, name='profile'),
     path("list/", views.list_users, name="list_users"),
+    path("list-with-courses/", list_users_with_courses),
 
     # Admin endpoint
     path('admin/login/', AdminLoginAPIView.as_view(), name='admin-login'),

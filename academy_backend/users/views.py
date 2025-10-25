@@ -200,6 +200,36 @@ def list_users(request):
             for user in users
         ]
         return JsonResponse(users_list, safe=False)
+# users/views.py
+from django.http import JsonResponse
+from users.models import User
+from courses.models import EnrolledCourse, Course  # import your course model
+
+def list_users_with_courses(request):
+    if request.method == "GET":
+        users = User.objects.all()
+        users_list = []
+
+        for user in users:
+            enrolled = EnrolledCourse.objects(user=user)
+            courses_list = [
+                {
+                    "id": str(e.course.id),
+                    "title": e.course.title,
+                    "enrolled_at": e.enrolled_at.isoformat()
+                }
+                for e in enrolled
+            ]
+
+            users_list.append({
+                "id": str(user.id),
+                "name": getattr(user, "name", ""),
+                "email": user.email,
+                "phone": getattr(user, "phone", ""),
+                "enrolled_courses": courses_list
+            })
+
+        return JsonResponse(users_list, safe=False)
 
 
 

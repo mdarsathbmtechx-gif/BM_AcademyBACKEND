@@ -77,7 +77,7 @@ export default function WhyChooseUs() {
 </Link>
 
           <a
-            href="tel:+91XXXXXXXXXX"
+            href="tel:+918270652229"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition transform active:scale-95 hover:scale-105"
           >
             <IoIosCall size={20} />

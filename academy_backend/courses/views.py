@@ -345,7 +345,6 @@ def create_order(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
-
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def confirm_payment(request):
@@ -383,9 +382,15 @@ def confirm_payment(request):
             payment.status = "paid"
             payment.save()
 
-            # Enroll user
-            if not EnrolledCourse.objects.filter(user=user, course_id=str(payment.course_id)).exists():
-                EnrolledCourse.objects.create(user=user, course_id=str(payment.course_id))
+            # Fetch the Course object from MongoDB
+            try:
+                course = Course.objects.get(id=payment.course_id)
+            except Course.DoesNotExist:
+                return Response({"success": False, "error": "Course not found in enrollment step"}, status=404)
+
+            # Enroll user (only if not already enrolled)
+            if not EnrolledCourse.objects.filter(user=user, course_id=str(course.id)).exists():
+                EnrolledCourse.objects.create(user=user, course_id=str(course.id))
 
             return Response({"success": True, "message": "Payment verified and enrolled successfully."})
 
@@ -403,46 +408,81 @@ def confirm_payment(request):
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Course, EnrolledCourse
+from bson import ObjectId
+from .models import User, Course, EnrolledCourse
+from datetime import datetime
 
+# ----------------- Enroll a course -----------------
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def enroll_course(request):
-    user = request.user
+    # Use email from your auth token to fetch MongoDB user
+    user_email = request.user.email
     course_id = request.data.get("course_id")
-    
-    # check if course exists in MongoDB
+    payment_id = request.data.get("payment_id")
+
+    if not course_id or not payment_id:
+        return Response({"success": False, "message": "Course ID or Payment ID missing."}, status=400)
+
+    # Fetch user from MongoDB
     try:
-        course = Course.objects.get(id=course_id)
+        user = User.objects.get(email=user_email)
+    except User.DoesNotExist:
+        return Response({"success": False, "message": "User not found."}, status=404)
+
+    # Fetch course from MongoDB
+    try:
+        course = Course.objects.get(id=ObjectId(course_id))
     except Course.DoesNotExist:
         return Response({"success": False, "message": "Course not found."}, status=404)
+    except Exception as e:
+        return Response({"success": False, "message": f"Invalid course ID: {str(e)}"}, status=400)
 
-    # check if user already enrolled
-    if EnrolledCourse.objects.filter(user=user, course_id=str(course.id)).exists():
+    # Check if user already enrolled
+    if EnrolledCourse.objects(user=user, course=course).first():
         return Response({"success": False, "message": "Already enrolled."})
 
-    # create enrollment record
-    EnrolledCourse.objects.create(user=user, course_id=str(course.id))
+    # Create enrollment record
+    try:
+        EnrolledCourse.objects.create(
+            user=user,
+            course=course,
+            payment_id=payment_id,
+            enrolled_at=datetime.utcnow()
+        )
+    except Exception as e:
+        return Response({"success": False, "message": f"Failed to enroll: {str(e)}"}, status=500)
+
     return Response({"success": True, "message": "Course enrolled successfully."})
 
+# ----------------- Get my courses -----------------
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_courses(request):
-    user = request.user
-    enrolled = EnrolledCourse.objects.filter(user=user)
-    course_ids = [e.course_id for e in enrolled]
+    user_email = request.user.email
 
-    # fetch details from MongoDB
-    courses = Course.objects.filter(id__in=course_ids)
+    # Fetch user from MongoDB
+    try:
+        user = User.objects.get(email=user_email)
+    except User.DoesNotExist:
+        return Response({"success": False, "message": "User not found."}, status=404)
+
+    # Get all enrolled courses
+    enrolled_list = EnrolledCourse.objects(user=user)
     data = []
-    for c in courses:
+
+    for e in enrolled_list:
+        course = e.course
         data.append({
-            "id": str(c.id),
-            "title": c.title,
-            "description": c.description,
-            "price": c.price,
-            "image_url": c.image_url,
-            "duration": c.duration,
-            "modules": c.modules,
+            "id": str(course.id),
+            "title": course.title,
+            "description": course.description,
+            "price": course.price,
+            "image_url": course.image_url,
+            "duration": course.duration,
+            "modules": course.modules,
+            "payment_id": e.payment_id,
+            "enrolled_at": e.enrolled_at
         })
+
     return Response(data)

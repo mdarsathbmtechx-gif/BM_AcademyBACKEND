@@ -20,12 +20,13 @@ const CallToAction = () => {
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
           <a
-            href="/contact"
+            href="tel:+918270652229"
             className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center gap-2 shadow-md active:scale-95"
           >
             <IoIosCall size={20} />
-            Contact Us
+            Call Us
           </a>
+
           <a
             href="/apply"
             className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-lg font-semibold transition-colors shadow-md active:scale-95"

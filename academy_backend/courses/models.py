@@ -34,18 +34,20 @@ class Payment(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
-
 # models.py
-from django.db import models
-from django.contrib.auth.models import User
+from mongoengine import Document, ReferenceField, StringField, DateTimeField
+from datetime import datetime
+from users.models import User  # your MongoEngine User model
+from courses.models import Course  # your MongoEngine Course model
 
-class EnrolledCourse(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    course_id = models.CharField(max_length=100)  # store MongoDB Course ID as string
-    enrolled_at = models.DateTimeField(auto_now_add=True)
+class EnrolledCourse(Document):
+    user = ReferenceField(User, required=True)
+    course = ReferenceField(Course, required=True)
+    payment_id = StringField(required=True)
+    enrolled_at = DateTimeField(default=datetime.utcnow)
 
     def __str__(self):
-        return f"{self.user.username} - {self.course_id}"
+        return f"{self.user.email} - {self.course.title}"
 
 
 
