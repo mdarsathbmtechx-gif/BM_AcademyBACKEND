@@ -25,27 +25,74 @@ export default function MyCourses() {
     fetchCourses();
   }, []);
 
-  if (loading) return <p className="text-center mt-10">Loading your courses...</p>;
+  if (loading)
+    return <p className="text-center mt-10 text-gray-600">Loading your courses...</p>;
 
   if (!courses.length)
-    return <p className="text-center mt-10">You have not enrolled in any courses yet.</p>;
+    return <p className="text-center mt-10 text-gray-600">You have not enrolled in any courses yet.</p>;
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">My Courses</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="p-6 max-w-7xl mx-auto">
+      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">My Courses</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.map((course) => (
-          <div key={course.id} className="bg-white shadow-md rounded-lg p-4">
-            <img
-              src={course.image_url || "/logo.png"}
-              alt={course.title}
-              className="h-40 w-full object-cover rounded-md mb-4"
-            />
-            <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-            <p className="text-gray-600 mb-2">{course.description}</p>
-            <p className="text-green-600 font-semibold mb-2">₹{course.price}</p>
-            <p className="text-sm text-gray-500 mb-2">Duration: {course.duration}</p>
-            <p className="text-sm text-gray-500 mb-2">Enrolled At: {new Date(course.enrolled_at).toLocaleDateString()}</p>
+          <div
+            key={course.id}
+            className="bg-white shadow-lg rounded-xl overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-2xl"
+          >
+            {/* Course Image */}
+            <div className="relative h-48 w-full overflow-hidden">
+              <img
+                src={course.image_url || "/logo.png"}
+                alt={course.title}
+                className="h-full w-full object-cover"
+              />
+              <span
+                className={`absolute top-3 left-3 px-3 py-1 rounded-full text-sm font-semibold
+                  ${
+                    course.status === "Completed"
+                      ? "bg-green-100 text-green-700"
+                      : course.status === "In Progress"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-gray-100 text-gray-600"
+                  }
+                `}
+              >
+                {course.status}
+              </span>
+            </div>
+
+            {/* Course Details */}
+            <div className="p-4 flex flex-col justify-between h-72">
+              <div>
+                <h3 className="text-xl font-semibold mb-2 text-gray-800">{course.title}</h3>
+                <p className="text-gray-600 text-sm mb-2 line-clamp-3">{course.description}</p>
+              </div>
+
+              <div className="mt-2">
+                <p className="text-green-600 font-bold mb-1">₹{course.price}</p>
+                <p className="text-gray-500 text-sm mb-1">Duration: {course.duration}</p>
+                <p className="text-gray-500 text-sm mb-1">
+                  Enrolled: {new Date(course.enrolled_at).toLocaleDateString()}
+                </p>
+                <p className="text-gray-500 text-sm mb-2">
+                  Modules: {(course.modules || []).join(", ")}
+                </p>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-200 rounded-full h-3 mb-1">
+                  <div
+                    className={`h-3 rounded-full ${
+                      course.progress >= 100
+                        ? "bg-green-500"
+                        : "bg-blue-500"
+                    }`}
+                    style={{ width: `${course.progress || 0}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm text-gray-500">{course.progress || 0}% completed</p>
+              </div>
+            </div>
           </div>
         ))}
       </div>

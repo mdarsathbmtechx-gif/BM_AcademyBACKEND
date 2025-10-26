@@ -198,49 +198,31 @@ def list_users(request):
         return JsonResponse(users_list, safe=False)
     
     
-# users/views.py
+
 # users/views.py
 from django.http import JsonResponse
-from users.models import User as MongoUser  # MongoEngine User model
+from users.models import User as MongoUser
 from courses.models import EnrolledCourse
 
 def list_users_with_courses(request):
-    """
-    Returns all users along with their enrolled courses.
-    Format:
-    [
-        {
-            "id": "<user_id>",
-            "name": "<user_name>",
-            "email": "<user_email>",
-            "phone": "<user_phone>",
-            "enrolled_courses": [
-                {
-                    "id": "<course_id>",
-                    "title": "<course_title>",
-                    "enrolled_at": "<ISO datetime>"
-                },
-                ...
-            ]
-        },
-        ...
-    ]
-    """
     if request.method == "GET":
         users = MongoUser.objects.all()
         users_list = []
 
         for user in users:
-            # Fetch enrolled courses for this user
             enrolled = EnrolledCourse.objects(user=user)
             courses_list = [
-                {
-                    "id": str(e.course.id),
-                    "title": e.course.title,
-                    "enrolled_at": e.enrolled_at.isoformat()
-                }
-                for e in enrolled
-            ]
+    {
+        "id": str(e.course.id),
+        "title": e.course.title,
+        "enrolled_at": e.enrolled_at.isoformat(),
+        "price": e.course.price,
+        "progress": getattr(e, "progress", 0),
+        "status": getattr(e, "status", "Not Started")
+    }
+    for e in enrolled
+]
+
 
             users_list.append({
                 "id": str(user.id),

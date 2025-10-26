@@ -1,5 +1,5 @@
 // client/src/Admin/Users.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 
 const Users = () => {
@@ -7,10 +7,11 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortField, setSortField] = useState("enrolled_at");
-  const [sortOrder, setSortOrder] = useState("desc"); // desc or asc
-  const itemsPerPage = 5; // courses per page
+  const [itemsPerPage] = useState(5);
 
+  const detailRef = useRef(null);
+
+  // Fetch all users with their courses
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -22,57 +23,75 @@ const Users = () => {
         );
         setUsers(res.data);
       } catch (err) {
-        console.error("Error fetching users:", err.response?.status, err.response?.data || err);
-        alert("Failed to fetch users. Check console for details.");
+        console.error("Error fetching users:", err);
+        alert("Failed to fetch users.");
       } finally {
         setLoading(false);
       }
     };
-
     fetchUsers();
   }, []);
+
+  // Open user details and scroll to section
+  const openUserDetails = (user) => {
+    setSelectedUser(user);
+    setCurrentPage(1);
+    setTimeout(() => detailRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  };
+
+  // Update course status locally and via backend
+  const updateCourseStatus = async (courseId, newStatus) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(
+        `${import.meta.env.VITE_BASE_URI.replace(/\/$/, "")}/courses/${courseId}/update-status/`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Update selectedUser state locally
+      setSelectedUser((prevUser) => {
+        const updatedCourses = prevUser.enrolled_courses.map((course) => {
+          if (course.id === courseId) {
+            let progress = course.progress || 0;
+            if (newStatus === "Completed") progress = 100;
+            else if (newStatus === "In Progress" && progress === 0) progress = 10;
+            else if (newStatus === "Not Started") progress = 0;
+            return { ...course, status: newStatus, progress };
+          }
+          return course;
+        });
+        return { ...prevUser, enrolled_courses: updatedCourses };
+      });
+    } catch (err) {
+      console.error("Error updating course status:", err);
+      alert("Failed to update course status. Make sure you are logged in as admin.");
+    }
+  };
 
   if (loading)
     return <div className="p-10 text-center text-gray-700">Loading users...</div>;
 
-  const openModal = (user) => {
-    setSelectedUser(user);
-    setCurrentPage(1); // reset pagination when opening a new user
-  };
+  const totalPages = selectedUser
+    ? Math.ceil(selectedUser.enrolled_courses?.length / itemsPerPage)
+    : 0;
 
-  const closeModal = () => setSelectedUser(null);
-
-  const sortedCourses = selectedUser?.enrolled_courses
-    ? [...selectedUser.enrolled_courses].sort((a, b) => {
-        if (sortOrder === "asc") return new Date(a[sortField]) - new Date(b[sortField]);
-        else return new Date(b[sortField]) - new Date(a[sortField]);
-      })
+  const paginatedCourses = selectedUser?.enrolled_courses
+    ? selectedUser.enrolled_courses.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+      )
     : [];
-
-  const paginatedCourses = sortedCourses.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const totalPages = Math.ceil(sortedCourses.length / itemsPerPage);
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortOrder("asc");
-    }
-  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">All Users</h2>
 
+      {/* Users Table */}
       {users.length === 0 ? (
         <p className="text-gray-600">No users found.</p>
       ) : (
-        <div className="overflow-x-auto bg-white shadow-lg rounded-xl">
+        <div className="overflow-x-auto bg-white shadow-lg rounded-xl mb-6">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-yellow-500 text-black">
               <tr>
@@ -84,10 +103,10 @@ const Users = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {users.map((user, index) => (
+              {users.map((user, idx) => (
                 <tr
-                  key={user.id || index}
-                  className={`transition hover:bg-gray-50 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                  key={user.id || idx}
+                  className={`transition hover:bg-gray-50 ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
                 >
                   <td className="px-6 py-4 text-gray-700">{user.name || "N/A"}</td>
                   <td className="px-6 py-4 text-gray-700">{user.email}</td>
@@ -95,7 +114,7 @@ const Users = () => {
                   <td className="px-6 py-4 text-gray-700">{user.enrolled_courses?.length || 0}</td>
                   <td className="px-6 py-4">
                     <button
-                      onClick={() => openModal(user)}
+                      onClick={() => openUserDetails(user)}
                       className="bg-yellow-400 hover:bg-yellow-500 text-black font-medium py-1 px-3 rounded-lg transition-colors"
                     >
                       View
@@ -108,74 +127,90 @@ const Users = () => {
         </div>
       )}
 
-      {/* Modal */}
+      {/* User Details */}
       {selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-11/12 max-w-2xl p-6 relative">
-            <h3 className="text-2xl font-bold mb-4 text-gray-800">
-              {selectedUser.name}'s Enrolled Courses
-            </h3>
-            <button
-              onClick={closeModal}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-lg"
-            >
-              &times;
-            </button>
+        <div ref={detailRef} className="bg-white shadow-lg rounded-xl p-6 mb-6">
+          <h3 className="text-2xl font-bold mb-4">{selectedUser.name}'s Details</h3>
+          <p><strong>Email:</strong> {selectedUser.email}</p>
+          <p><strong>Phone:</strong> {selectedUser.phone || "N/A"}</p>
+          <p><strong>Total Courses:</strong> {selectedUser.enrolled_courses?.length || 0}</p>
 
-            {sortedCourses.length > 0 ? (
-              <>
-                <table className="w-full text-left border-collapse mb-4">
-                  <thead>
-                    <tr>
-                      <th
-                        className="cursor-pointer px-4 py-2"
-                        onClick={() => handleSort("title")}
-                      >
-                        Title
-                      </th>
-                      <th
-                        className="cursor-pointer px-4 py-2"
-                        onClick={() => handleSort("enrolled_at")}
-                      >
-                        Enrolled At {sortField === "enrolled_at" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
-                      </th>
-                      <th className="px-4 py-2">Price</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedCourses.map((course) => (
-                      <tr key={course.id} className="border-t">
-                        <td className="px-4 py-2">{course.title}</td>
-                        <td className="px-4 py-2">{new Date(course.enrolled_at).toLocaleDateString()}</td>
-                        <td className="px-4 py-2">₹{course.price}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <h4 className="text-xl font-semibold mt-4 mb-2">Enrolled Courses</h4>
+          {paginatedCourses.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 gap-4">
+                {paginatedCourses.map((course) => (
+                  <div
+                    key={course.id}
+                    className="bg-gray-50 p-4 rounded-lg shadow flex flex-col md:flex-row md:justify-between md:items-center"
+                  >
+                    <div className="flex-1">
+                      <h5 className="text-lg font-semibold">{course.title}</h5>
+                      <p className="text-sm text-gray-600">Enrolled: {new Date(course.enrolled_at).toLocaleDateString()}</p>
+                      <p className="text-sm text-gray-600">Price: ₹{course.price}</p>
+                      <p className="text-sm text-gray-600">Status: {course.status || "Not Started"}</p>
 
-                {/* Pagination */}
-                <div className="flex justify-center gap-2">
-                  <button
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-                  >
-                    Prev
-                  </button>
-                  <span className="px-3 py-1">{currentPage} / {totalPages}</span>
-                  <button
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                </div>
-              </>
-            ) : (
-              <p className="text-gray-500">No courses enrolled.</p>
-            )}
-          </div>
+                      <div className="mt-2 w-full bg-gray-200 rounded-full h-3">
+                        <div
+                          className={`h-3 rounded-full ${
+                            course.status === "Completed"
+                              ? "bg-green-500"
+                              : course.status === "In Progress"
+                              ? "bg-yellow-500"
+                              : "bg-gray-400"
+                          } transition-all`}
+                          style={{ width: `${course.progress || 0}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">{course.progress || 0}% completed</p>
+                    </div>
+
+                    <div className="mt-2 flex gap-2 md:mt-0">
+                      <button
+                        onClick={() => updateCourseStatus(course.id, "In Progress")}
+                        className="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500 transition"
+                      >
+                        In Progress
+                      </button>
+                      <button
+                        onClick={() => updateCourseStatus(course.id, "Completed")}
+                        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
+                      >
+                        Completed
+                      </button>
+                      <button
+                        onClick={() => updateCourseStatus(course.id, "Not Started")}
+                        className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 transition"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              <div className="flex justify-center gap-2 mt-4">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <span className="px-3 py-1">{currentPage} / {totalPages}</span>
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-gray-500">No courses enrolled.</p>
+          )}
         </div>
       )}
     </div>

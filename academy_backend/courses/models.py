@@ -33,21 +33,26 @@ class Payment(models.Model):
         default="pending"
     )
     created_at = models.DateTimeField(auto_now_add=True)
-
-# models.py
-from mongoengine import Document, ReferenceField, StringField, DateTimeField
+    
+    
+# courses/models.py
+from mongoengine import Document, ReferenceField, StringField, DateTimeField, IntField
 from datetime import datetime
-from users.models import User  # your MongoEngine User model
-from courses.models import Course  # your MongoEngine Course model
+from users.models import User
+from courses.models import Course
 
 class EnrolledCourse(Document):
     user = ReferenceField(User, required=True)
     course = ReferenceField(Course, required=True)
     payment_id = StringField(required=True)
     enrolled_at = DateTimeField(default=datetime.utcnow)
+    progress = IntField(default=0)  # 0-100 percent
+    status = StringField(choices=["Not Started", "In Progress", "Completed"], default="Not Started")
+
 
     def __str__(self):
         return f"{self.user.email} - {self.course.title}"
+
 
 
 

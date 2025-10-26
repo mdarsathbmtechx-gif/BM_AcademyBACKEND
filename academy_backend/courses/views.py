@@ -460,14 +460,8 @@ def enroll_course(request):
 @permission_classes([IsAuthenticated])
 def my_courses(request):
     user_email = request.user.email
+    user = User.objects.get(email=user_email)
 
-    # Fetch user from MongoDB
-    try:
-        user = User.objects.get(email=user_email)
-    except User.DoesNotExist:
-        return Response({"success": False, "message": "User not found."}, status=404)
-
-    # Get all enrolled courses
     enrolled_list = EnrolledCourse.objects(user=user)
     data = []
 
@@ -482,7 +476,48 @@ def my_courses(request):
             "duration": course.duration,
             "modules": course.modules,
             "payment_id": e.payment_id,
-            "enrolled_at": e.enrolled_at
-        })
+            "enrolled_at": e.enrolled_at,
+            "status": "Completed" if e.progress >= 100 else "In Progress",
+            "progress": e.progress        })
 
     return Response(data)
+
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from courses.models import EnrolledCourse
+from rest_framework import status
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def update_course_status(request, course_id):
+    # Only admin can update
+    if not request.user.is_staff and request.user.role != "admin":
+        return Response(
+            {"error": "Only admins can update course status."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    new_status = request.data.get("status")
+    if new_status not in ["Not Started", "In Progress", "Completed"]:
+        return Response({"error": "Invalid status"}, status=400)
+
+    enrolled_course = EnrolledCourse.objects(id=course_id).first()
+    if not enrolled_course:
+        return Response({"error": "Enrolled course not found"}, status=404)
+
+    # Update status and progress
+    enrolled_course.status = new_status
+    if new_status == "Completed":
+        enrolled_course.progress = 100
+    elif new_status == "In Progress" and (not enrolled_course.progress or enrolled_course.progress == 0):
+        enrolled_course.progress = 10
+    enrolled_course.save()
+
+    return Response({
+        "message": f"Course status updated to {new_status}",
+        "course_id": str(enrolled_course.id),
+        "status": new_status,
+        "progress": enrolled_course.progress
+    })
