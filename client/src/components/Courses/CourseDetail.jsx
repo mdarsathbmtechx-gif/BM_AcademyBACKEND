@@ -1,25 +1,21 @@
 // src/components/Courses/CourseDetail.jsx
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function CourseDetail() {
   const { courseId } = useParams();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showPreview, setShowPreview] = useState(false); // 👈 Modal state
   const navigate = useNavigate();
-
 
   const user = JSON.parse(localStorage.getItem("user")) || null;
 
   // ------------------ Public fetch ------------------
   const publicFetch = async (url, options = {}) => {
     const res = await fetch(url, options);
-    if (!res.ok) {
-      throw new Error(`Failed to fetch: ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
     return res.json();
   };
 
@@ -36,27 +32,14 @@ export default function CourseDetail() {
         setLoading(false);
       }
     };
-
     if (courseId) fetchCourse();
   }, [courseId]);
 
-  // ------------------ Loading/Error States ------------------
   if (loading) return <div className="text-center py-20 text-gray-500">Loading course details...</div>;
   if (error) return <div className="text-red-500 text-center py-20">{error}</div>;
   if (!course) return <div className="text-center py-20 text-gray-500">No course found.</div>;
 
-  const {
-    title,
-    description,
-    price,
-    original_price,
-    rating,
-    learners,
-    language,
-    duration,
-    modules,
-    image_url,
-  } = course;
+  const { title, description, price, original_price, rating, learners, language, duration, modules, image_url } = course;
 
   const modulesCount = modules?.length || 0;
   const currentPrice = price ?? 0;
@@ -84,11 +67,7 @@ export default function CourseDetail() {
         <div className="flex-1">
           <div className="bg-white shadow-lg rounded-xl p-6 mb-6">
             {image_url && (
-              <img
-                src={image_url}
-                alt={title}
-                className="w-full h-64 object-cover rounded-lg mb-4"
-              />
+              <img src={image_url} alt={title} className="w-full h-64 object-cover rounded-lg mb-4" />
             )}
             <h1 className="text-4xl font-bold text-gray-900 mb-3">{title}</h1>
             <p className="text-gray-700 mb-4">{description}</p>
@@ -153,12 +132,11 @@ export default function CourseDetail() {
           <div className="bg-white shadow-lg rounded-xl p-6 flex flex-col gap-4">
             {user ? (
               <button
-  onClick={() => navigate("/payments", { state: { course } })}
-  className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-green-700 transition"
->
-  Enroll Now
-</button>
-
+                onClick={() => navigate("/payments", { state: { course } })}
+                className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-green-700 transition"
+              >
+                Enroll Now
+              </button>
             ) : (
               <button
                 disabled
@@ -167,12 +145,59 @@ export default function CourseDetail() {
                 Login to Enroll
               </button>
             )}
-            <button className="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold shadow hover:bg-gray-300 transition">
+            <button
+              onClick={() => setShowPreview(true)} // 👈 open modal
+              className="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold shadow hover:bg-gray-300 transition"
+            >
               Preview Course
             </button>
           </div>
         </div>
       </div>
+
+      {/* ------------------ Modal ------------------ */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white w-[90%] max-w-3xl rounded-2xl shadow-lg overflow-hidden animate-fadeIn relative">
+            {/* Header */}
+            <div className="flex justify-between items-center px-6 py-4 border-b">
+              <h2 className="text-xl font-semibold text-gray-800">Course Preview</h2>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+              {image_url && (
+                <img src={image_url} alt={title} className="w-full h-60 object-cover rounded-lg mb-3" />
+              )}
+              <h3 className="text-2xl font-bold">{title}</h3>
+              <p className="text-gray-700">{description}</p>
+
+              {modules?.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-lg mb-2">Modules Overview</h4>
+                  <ul className="space-y-2">
+                    {modules.slice(0, 3).map((mod, i) => (
+                      <li key={i} className="p-3 bg-gray-100 rounded-lg flex justify-between">
+                        <span>{mod.title}</span>
+                        <span className="text-sm text-gray-500">{mod.duration || "N/A"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {modules.length > 3 && (
+                    <p className="text-sm text-gray-500 mt-2">+ {modules.length - 3} more modules...</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
