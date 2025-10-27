@@ -15,8 +15,8 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Courses", path: "/courses" },
-    { name: "SACT Test", path: "/sact" },
-    { name: "SAT Exam", path: "/sat" },
+    { name: "SACT Test", external: "https://scat-topaz.vercel.app/Sact.html" },
+    { name: "SAT Exam", external: "https://sample-sat.vercel.app/" },
     { name: "About", path: "/about" },
     { name: "Verify Certificate", path: "/verify" },
     { name: "Contact", path: "/contacts" },
@@ -117,15 +117,28 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center space-x-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
-              className="text-gray-700 hover:text-yellow-500 font-medium transition"
-            >
-              {link.name}
-            </Link>
-          ))}
+          {navLinks.map((link) =>
+  link.external ? (
+    <a
+      key={link.name}
+      href={link.external}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-gray-700 hover:text-yellow-500 font-medium transition"
+    >
+      {link.name}
+    </a>
+  ) : (
+    <Link
+      key={link.name}
+      to={link.path}
+      className="text-gray-700 hover:text-yellow-500 font-medium transition"
+    >
+      {link.name}
+    </Link>
+  )
+)}
+
 
           <div className="flex space-x-4 ml-6">
             {isLoggedIn ? (
@@ -191,16 +204,30 @@ export default function Navbar() {
         </div>
 
         <div className="flex flex-col space-y-4 p-4">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
-              onClick={() => setIsOpen(false)}
-              className="text-gray-700 hover:text-yellow-500 font-medium transition"
-            >
-              {link.name}
-            </Link>
-          ))}
+          {navLinks.map((link) =>
+  link.external ? (
+    <a
+      key={link.name}
+      href={link.external}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => setIsOpen(false)}
+      className="text-gray-700 hover:text-yellow-500 font-medium transition"
+    >
+      {link.name}
+    </a>
+  ) : (
+    <Link
+      key={link.name}
+      to={link.path}
+      onClick={() => setIsOpen(false)}
+      className="text-gray-700 hover:text-yellow-500 font-medium transition"
+    >
+      {link.name}
+    </Link>
+  )
+)}
+
         </div>
 
         <div className="flex flex-col space-y-3 mt-4 md:hidden px-4">
