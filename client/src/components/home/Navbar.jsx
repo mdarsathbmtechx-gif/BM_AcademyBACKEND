@@ -31,18 +31,16 @@ export default function Navbar() {
       setIsLoggedIn(true);
       setUser(JSON.parse(userData));
 
-      // Optional: refresh profile data
       fetch(`${import.meta.env.VITE_BASE_URI}users/profile/`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then(async (res) => {
           const contentType = res.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
+          if (contentType?.includes("application/json")) {
             if (!res.ok) throw await res.json();
             return res.json();
           } else {
-            const text = await res.text();
-            throw new Error("Non-JSON response: " + text);
+            throw new Error("Non-JSON response");
           }
         })
         .then((data) => {
@@ -50,7 +48,6 @@ export default function Navbar() {
           setIsLoggedIn(true);
         })
         .catch(() => {
-          // Invalid token → logout
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setIsLoggedIn(false);
@@ -62,7 +59,6 @@ export default function Navbar() {
     }
   }, []);
 
-  // Listen for login/logout in other tabs
   useEffect(() => {
     const handleStorageChange = () => {
       const token = localStorage.getItem("token");
@@ -91,12 +87,12 @@ export default function Navbar() {
   const authButtons = (
     <>
       <Link to="/login">
-        <button className="w-[150px] bg-black h-[50px] flex items-center justify-center rounded-xl text-white">
+        <button className="w-[140px] h-[46px] rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-semibold hover:shadow-lg transition-all duration-300">
           Login
         </button>
       </Link>
       <Link to="/signup">
-        <button className="w-[150px] bg-black h-[50px] flex items-center justify-center rounded-xl text-white">
+        <button className="w-[140px] h-[46px] rounded-lg border border-yellow-500 text-yellow-600 font-semibold hover:bg-yellow-500 hover:text-white transition-all duration-300">
           Sign Up
         </button>
       </Link>
@@ -106,8 +102,8 @@ export default function Navbar() {
   if (loading) return null;
 
   return (
-    <nav className="bg-white shadow-md fixed w-full top-0 left-0 z-50">
-      <div className="flex justify-between items-center h-20 px-6">
+    <nav className="fixed w-full top-0 left-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+      <div className="flex justify-between items-center h-20 px-6 lg:px-12">
         <Link to="/">
           <img
             src={Logo}
@@ -116,55 +112,57 @@ export default function Navbar() {
           />
         </Link>
 
-        <div className="hidden md:flex items-center space-x-6">
+        {/* Desktop Links */}
+        <div className="hidden md:flex items-center space-x-8">
           {navLinks.map((link) =>
-  link.external ? (
-    <a
-      key={link.name}
-      href={link.external}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-gray-700 hover:text-yellow-500 font-medium transition"
-    >
-      {link.name}
-    </a>
-  ) : (
-    <Link
-      key={link.name}
-      to={link.path}
-      className="text-gray-700 hover:text-yellow-500 font-medium transition"
-    >
-      {link.name}
-    </Link>
-  )
-)}
+            link.external ? (
+              <a
+                key={link.name}
+                href={link.external}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative text-gray-700 hover:text-yellow-600 font-medium transition duration-200 group"
+              >
+                {link.name}
+                <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-yellow-500 transition-all duration-300 group-hover:w-full"></span>
+              </a>
+            ) : (
+              <Link
+                key={link.name}
+                to={link.path}
+                className="relative text-gray-700 hover:text-yellow-600 font-medium transition duration-200 group"
+              >
+                {link.name}
+                <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-yellow-500 transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+            )
+          )}
 
-
-          <div className="flex space-x-4 ml-6">
+          {/* Profile / Auth Buttons */}
+          <div className="ml-8 flex items-center space-x-4">
             {isLoggedIn ? (
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center"
+                  className="flex items-center transition hover:scale-105"
                 >
                   <FaUserCircle
                     size={30}
-                    className="text-gray-700 hover:text-yellow-500"
+                    className="text-gray-700 hover:text-yellow-500 transition-colors"
                   />
                 </button>
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg">
+                  <div className="absolute right-0 mt-3 w-44 bg-white border border-gray-100 rounded-xl shadow-lg py-2 animate-fadeIn">
                     <Link
                       to="/dashboard/student"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-gray-700 hover:bg-yellow-50 rounded-lg transition"
                       onClick={() => setDropdownOpen(false)}
                     >
                       Dashboard
                     </Link>
-
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
+                      className="w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition"
                     >
                       Logout
                     </button>
@@ -177,77 +175,85 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-gray-700 focus:outline-none"
+          className="md:hidden text-gray-700 focus:outline-none hover:text-yellow-600 transition"
           onClick={() => setIsOpen(true)}
         >
           <Menu size={28} />
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
           onClick={() => setIsOpen(false)}
         />
       )}
+
+      {/* Mobile Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:hidden ${isOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`fixed top-0 right-0 h-full w-72 bg-white/95 backdrop-blur-lg shadow-xl z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Menu</h2>
-          <button onClick={() => setIsOpen(false)} className="focus:outline-none">
-            <X size={24} />
+        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-700">Menu</h2>
+          <button onClick={() => setIsOpen(false)}>
+            <X size={24} className="text-gray-600 hover:text-yellow-600" />
           </button>
         </div>
 
-        <div className="flex flex-col space-y-4 p-4">
+        <div className="flex flex-col space-y-4 p-5">
           {navLinks.map((link) =>
-  link.external ? (
-    <a
-      key={link.name}
-      href={link.external}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={() => setIsOpen(false)}
-      className="text-gray-700 hover:text-yellow-500 font-medium transition"
-    >
-      {link.name}
-    </a>
-  ) : (
-    <Link
-      key={link.name}
-      to={link.path}
-      onClick={() => setIsOpen(false)}
-      className="text-gray-700 hover:text-yellow-500 font-medium transition"
-    >
-      {link.name}
-    </Link>
-  )
-)}
-
+            link.external ? (
+              <a
+                key={link.name}
+                href={link.external}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsOpen(false)}
+                className="text-gray-700 hover:text-yellow-600 font-medium transition"
+              >
+                {link.name}
+              </a>
+            ) : (
+              <Link
+                key={link.name}
+                to={link.path}
+                onClick={() => setIsOpen(false)}
+                className="text-gray-700 hover:text-yellow-600 font-medium transition"
+              >
+                {link.name}
+              </Link>
+            )
+          )}
         </div>
 
-        <div className="flex flex-col space-y-3 mt-4 md:hidden px-4">
+        <div className="border-t border-gray-100 mt-4 p-5">
           {isLoggedIn ? (
-            <div className="flex flex-col space-y-2">
-              <Link to="/profile" onClick={() => setIsOpen(false)}>
-                <FaUserCircle size={30} className="text-gray-700 hover:text-yellow-500" />
+            <div className="flex flex-col space-y-3">
+              <Link
+                to="/dashboard/student"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-yellow-600 transition"
+              >
+                <FaUserCircle size={26} />
+                <span>Dashboard</span>
               </Link>
               <button
                 onClick={() => {
                   handleLogout();
                   setIsOpen(false);
                 }}
-                className="text-red-500 font-medium hover:text-red-700"
+                className="text-red-500 font-medium hover:text-red-700 transition"
               >
                 Logout
               </button>
             </div>
           ) : (
-            authButtons
+            <div className="flex flex-col space-y-3">{authButtons}</div>
           )}
         </div>
       </div>

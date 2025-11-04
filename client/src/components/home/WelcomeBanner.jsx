@@ -8,12 +8,6 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import AcademyBanner from "../../../public/img/Academy-banner.jpg";
 
-
-// Icons
-import { IoIosRocket } from "react-icons/io";
-import { IoBookSharp } from "react-icons/io5";
-import { FaGraduationCap, FaNoteSticky } from "react-icons/fa6";
-
 const WelcomeBanner = () => {
   const [banners, setBanners] = useState([]);
 
@@ -59,20 +53,19 @@ const WelcomeBanner = () => {
 
   // Fallback banners if API fails or is empty
   const fallbackBanners = [
-  {
-    title: "Discover Your Career Path",
-    description:
-      "SACT – Smart Aptitude & Career Test matches your skills with careers & courses. Your roadmap in minutes.",
-    image: AcademyBanner,
-  },
-  {
-    title: "Scholarships up to 85%",
-    description:
-      "Don’t let fees hold you back. At BM Academy, every deserving student gets access to quality education with massive scholarship support.",
-    image: AcademyBanner, // You can use the same local image or another one
-  },
-];
-
+    {
+      title: "Discover Your Career Path",
+      description:
+        "SACT – Smart Aptitude & Career Test matches your skills with careers & courses. Your roadmap in minutes.",
+      image: AcademyBanner,
+    },
+    {
+      title: "Scholarships up to 85%",
+      description:
+        "Don’t let fees hold you back. At BM Academy, every deserving student gets access to quality education with massive scholarship support.",
+      image: AcademyBanner,
+    },
+  ];
 
   const renderBanner = (banner, index) => (
     <div key={index}>
@@ -94,26 +87,6 @@ const WelcomeBanner = () => {
           <p className="text-base sm:text-lg md:text-xl text-gray-200/90 mb-8 leading-relaxed px-3 py-2 rounded-xl">
             {banner.description}
           </p>
-
-          {/* Optional CTA buttons for first banner */}
-          {index === 0 && (
-            <div className="flex flex-wrap justify-center gap-4 mt-6">
-              <a
-                href="#test-form"
-                className="px-5 sm:px-6 py-3 bg-yellow-400 text-black font-semibold rounded-xl hover:scale-105 transition flex items-center gap-2 text-sm sm:text-base"
-              >
-                <FaNoteSticky />
-                Take Test Now
-              </a>
-              <a
-                href="#how-it-works"
-                className="px-5 sm:px-6 py-3 border-2 border-yellow-400 text-yellow-400 font-semibold rounded-xl shadow-lg hover:bg-yellow-400 hover:text-black hover:scale-105 transition flex items-center gap-2 text-sm sm:text-base"
-              >
-                <IoBookSharp />
-                How It Works
-              </a>
-            </div>
-          )}
         </div>
       </section>
     </div>

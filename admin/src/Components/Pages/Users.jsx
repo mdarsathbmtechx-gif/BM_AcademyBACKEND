@@ -51,35 +51,37 @@ const Users = () => {
   };
 
   // ✅ Update course status both in backend and UI
-  const updateCourseStatus = async (enrolledCourseId, newStatus) => {
-    try {
-      await axiosInstance.patch(`/courses/${enrolledCourseId}/update-status/`, {
-        status: newStatus,
+const updateCourseStatus = async (enrolledCourseId, newStatus) => {
+  try {
+    // ✅ Correct API endpoint
+    await axiosInstance.patch(`/courses/${enrolledCourseId}/update-status/`, {
+      status: newStatus,
+    });
+
+    // ✅ Update UI immediately
+    setSelectedUser((prevUser) => {
+      const updatedCourses = prevUser.enrolled_courses.map((course) => {
+        if (course.id === enrolledCourseId) {
+          let progress = course.progress || 0;
+
+          if (newStatus === "Completed") progress = 100;
+          else if (newStatus === "In Progress" && progress === 0) progress = 10;
+          else if (newStatus === "Not Started") progress = 0;
+
+          return { ...course, status: newStatus, progress };
+        }
+        return course;
       });
+      return { ...prevUser, enrolled_courses: updatedCourses };
+    });
 
-      // Update the state instantly for a smoother UX
-      setSelectedUser((prevUser) => {
-        const updatedCourses = prevUser.enrolled_courses.map((course) => {
-          if (course.id === enrolledCourseId) {
-            let progress = course.progress || 0;
+    toast.success(`✅ Course marked as "${newStatus}"`);
+  } catch (error) {
+    console.error("Error updating course status:", error);
+    toast.error("Failed to update course status. Please try again.");
+  }
+};
 
-            if (newStatus === "Completed") progress = 100;
-            else if (newStatus === "In Progress" && progress === 0) progress = 10;
-            else if (newStatus === "Not Started") progress = 0;
-
-            return { ...course, status: newStatus, progress };
-          }
-          return course;
-        });
-        return { ...prevUser, enrolled_courses: updatedCourses };
-      });
-
-      toast.success(`✅ Course marked as "${newStatus}"`);
-    } catch (error) {
-      console.error("Error updating course status:", error);
-      toast.error("Failed to update course status. Please try again.");
-    }
-  };
 
   // ✅ Loading spinner
   if (loading) {
@@ -96,9 +98,9 @@ const Users = () => {
 
   const paginatedCourses = selectedUser?.enrolled_courses
     ? selectedUser.enrolled_courses.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-      )
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    )
     : [];
 
   return (
@@ -124,9 +126,8 @@ const Users = () => {
               {users.map((user, idx) => (
                 <tr
                   key={user.id || idx}
-                  className={`transition hover:bg-gray-50 ${
-                    idx % 2 === 0 ? "bg-gray-50" : "bg-white"
-                  }`}
+                  className={`transition hover:bg-gray-50 ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    }`}
                 >
                   <td className="px-6 py-4 text-gray-700 font-medium">{user.name || "N/A"}</td>
                   <td className="px-6 py-4 text-gray-700">{user.email}</td>
@@ -178,13 +179,12 @@ const Users = () => {
 
                       <div className="mt-2 w-full bg-gray-200 rounded-full h-3">
                         <div
-                          className={`h-3 rounded-full ${
-                            course.status === "Completed"
+                          className={`h-3 rounded-full ${course.status === "Completed"
                               ? "bg-green-500"
                               : course.status === "In Progress"
-                              ? "bg-yellow-500"
-                              : "bg-gray-400"
-                          } transition-all`}
+                                ? "bg-yellow-500"
+                                : "bg-gray-400"
+                            } transition-all`}
                           style={{ width: `${course.progress || 0}%` }}
                         ></div>
                       </div>

@@ -5,3 +5,13 @@
 
 @import "tailwindcss";
 @import "flowbite/dist/flowbite.css";
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;500;600&display=swap');
+
+html, body {
+  font-family: 'Open Sans', sans-serif;
+  letter-spacing: 0.2px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Merriweather', serif;
+}

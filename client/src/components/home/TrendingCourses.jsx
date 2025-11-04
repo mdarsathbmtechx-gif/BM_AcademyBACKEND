@@ -1,148 +1,157 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
-const TrendingCourses = () => {
+export default function TrendingCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const publicFetch = async (url) => {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
-    return res.json();
-  };
-
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        setLoading(true);
-        const data = await publicFetch(`${import.meta.env.VITE_BASE_URI}courses/`);
-        if (!Array.isArray(data)) throw new Error("Courses response is not an array");
-        setCourses(data.slice(0, 6)); // Take only top 6 courses
+        const res = await fetch(`${import.meta.env.VITE_BASE_URI}courses/`);
+        if (!res.ok) throw new Error("Failed to fetch courses");
+        const data = await res.json();
+
+        const courseList = Array.isArray(data) ? data.slice(0, 6) : [];
+        setCourses(courseList);
       } catch (err) {
-        console.error("Courses fetch error:", err);
-        setError(err.message);
+        console.error("Error fetching courses:", err);
+        setError("Could not load courses");
       } finally {
         setLoading(false);
       }
     };
-
     fetchCourses();
   }, []);
 
-  const getCourseId = (course) => {
-    if (course._id?.$oid) return course._id.$oid;
-    if (course.id) return course.id;
-    if (course._id) return course._id;
-    return null;
-  };
+  const getCourseId = (c) => c._id?.$oid || c.id || c._id || null;
 
-  if (loading) return <p className="text-center py-20 text-gray-500">Loading courses...</p>;
+  if (loading)
+    return (
+      <div className="text-center py-20 text-gray-500 text-lg">
+        Loading courses...
+      </div>
+    );
+
   if (error)
     return (
-      <div className="text-center py-20 text-red-500">
-        <p>Error: {error}</p>
-        <p>Could not load courses. Please try again later.</p>
+      <div className="text-center py-20 text-red-400">
+        <p>{error}</p>
       </div>
     );
 
   return (
-    <section className="bg-gray-50 py-16 px-4 md:px-16">
-      {/* Section Header */}
-      <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold mb-4">
-          🔥 Trending Courses for Students & Job Seekers
+    <section className="bg-white py-20 px-6 md:px-16">
+      {/* Header */}
+      <div className="text-center mb-14">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+          Top-Rated Courses For Your Success!
         </h2>
-        <p className="text-gray-600 text-lg">
-          Boost your skills. Grab your dream job. Start today!
+        <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
+          Learn from industry experts and gain the skills you need to succeed in your career.
         </p>
       </div>
 
       {/* Courses Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 mx-auto">
-        {courses.map((course) => {
-          const courseId = getCourseId(course);
-          if (!courseId) return null;
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        {courses.length > 0 ? (
+          courses.map((course) => {
+            const id = getCourseId(course);
+            if (!id) return null;
 
-          return (
-            <div
-              key={courseId}
-              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-col"
-            >
-              {course.image_url && (
-                <img
-                  src={course.image_url}
-                  alt={course.title}
-                  className="w-full h-40 object-cover"
-                />
-              )}
-              <div className="p-6 flex flex-col justify-between flex-grow">
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-                  <p className="text-gray-500 mb-4 line-clamp-3">{course.description}</p>
-                  <div className="flex justify-between text-gray-700 text-sm font-medium">
-                    <p>
-                      Duration: <span className="font-normal">{course.duration}</span>
-                    </p>
-                    <p>{course.type || "Certificate Provided"}</p>
-                  </div>
+            return (
+              <div
+                key={id}
+                className="bg-white rounded-xl border border-gray-200 shadow-md hover:shadow-lg transition transform hover:-translate-y-1"
+              >
+                {course.image_url && (
+                  <img
+                    src={course.image_url}
+                    alt={course.title}
+                    className="w-full h-48 object-cover rounded-t-xl"
+                  />
+                )}
+                <div className="p-6 text-left">
+                  <p className="text-xs text-gray-500 mb-2">
+                    ⏱️ Duration: {course.duration || "Flexible"} |{" "}
+                    {course.type || "Certificate Included"}
+                  </p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 line-clamp-3 mb-4">
+                    {course.description}
+                  </p>
+                  <button
+                    onClick={() => navigate(`/courses/${id}`)}
+                    className="text-sm font-semibold text-yellow-600 hover:text-yellow-700 flex items-center gap-1"
+                  >
+                    Enquire →
+                  </button>
                 </div>
-                <button
-                  onClick={() => navigate(`/courses/${courseId}`)}
-                  className="mt-4 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-4 rounded-lg transition-colors"
-                >
-                  Learn More
-                </button>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <p className="text-center col-span-3 text-gray-500">
+            No courses available right now.
+          </p>
+        )}
       </div>
 
       {/* Why Choose Section */}
-      <section className="mt-16 px-6">
-        <div className="max-w-6xl mx-auto text-center">
-          <h3 className="text-3xl md:text-4xl font-extrabold mb-8 text-yellow-400 drop-shadow-lg">
-            ✨ Why Choose These Courses?
-          </h3>
+      <div className="mt-24 text-center max-w-6xl mx-auto">
+        <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">
+          Why Choose Our Courses?
+        </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="bg-black backdrop-blur-md p-6 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
-              <div className="text-yellow-400 text-4xl mb-4">🤖</div>
-              <h4 className="font-semibold text-lg text-white mb-2">Cutting-edge AI & Tech</h4>
-              <p className="text-gray-300 text-sm">Learn skills that are shaping the future.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+          {[
+            {
+              icon: "🚀",
+              title: "Learn In-Demand Skills",
+              desc: "Stay ahead of the competition with the latest technologies.",
+            },
+            {
+              icon: "🎓",
+              title: "Expert Instructors",
+              desc: "Learn from certified and experienced professionals.",
+            },
+            {
+              icon: "💼",
+              title: "Career Support",
+              desc: "Get guidance to land your dream job after the course.",
+            },
+            {
+              icon: "🏆",
+              title: "Recognized Certificates",
+              desc: "Showcase your achievement with industry-recognized credentials.",
+            },
+          ].map((f, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-xl border border-gray-200 shadow-md p-6 hover:shadow-lg transition transform hover:-translate-y-1"
+            >
+              <div className="text-4xl mb-4">{f.icon}</div>
+              <h4 className="font-semibold text-lg text-gray-900 mb-2">
+                {f.title}
+              </h4>
+              <p className="text-gray-600 text-sm">{f.desc}</p>
             </div>
-            <div className="bg-black backdrop-blur-md p-6 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
-              <div className="text-yellow-400 text-4xl mb-4">🛠️</div>
-              <h4 className="font-semibold text-lg text-white mb-2">Hands-on Projects</h4>
-              <p className="text-gray-300 text-sm">Real-world experience with live training.</p>
-            </div>
-            <div className="bg-black backdrop-blur-md p-6 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
-              <div className="text-yellow-400 text-4xl mb-4">💼</div>
-              <h4 className="font-semibold text-lg text-white mb-2">Job-ready Skills</h4>
-              <p className="text-gray-300 text-sm">High-demand skills for top career opportunities.</p>
-            </div>
-            <div className="bg-black backdrop-blur-md p-6 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
-              <div className="text-yellow-400 text-4xl mb-4">🏆</div>
-              <h4 className="font-semibold text-lg text-white mb-2">Scholarships</h4>
-              <p className="text-gray-300 text-sm">Get up to 85% support for deserving students.</p>
-            </div>
-          </div>
-
-          <div className="mt-10">
-  <Link
-    to="/courses"
-    className="bg-yellow-400 text-black font-bold py-3 px-8 rounded-2xl shadow-lg hover:scale-105 hover:shadow-[0_0_20px_rgba(255,221,0,0.8)] transition-all duration-300 inline-block text-center"
-  >
-    Enroll Now
-  </Link>
-</div>
+          ))}
         </div>
-      </section>
+
+        <div className="mt-14">
+          <Link
+            to="/courses"
+            className="bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-10 rounded-xl shadow-md transition-all duration-300"
+          >
+            Explore All Courses
+          </Link>
+        </div>
+      </div>
     </section>
   );
-};
-
-export default TrendingCourses;
+}

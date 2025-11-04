@@ -7,7 +7,7 @@ export default function CourseDetail() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showPreview, setShowPreview] = useState(false); // 👈 Modal state
+  const [showPreview, setShowPreview] = useState(false);
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user")) || null;
@@ -35,11 +35,23 @@ export default function CourseDetail() {
     if (courseId) fetchCourse();
   }, [courseId]);
 
-  if (loading) return <div className="text-center py-20 text-gray-500">Loading course details...</div>;
+  if (loading)
+    return <div className="text-center py-20 text-gray-500">Loading course details...</div>;
   if (error) return <div className="text-red-500 text-center py-20">{error}</div>;
   if (!course) return <div className="text-center py-20 text-gray-500">No course found.</div>;
 
-  const { title, description, price, original_price, rating, learners, language, duration, modules, image_url } = course;
+  const {
+    title,
+    description,
+    price,
+    original_price,
+    rating,
+    learners,
+    language,
+    duration,
+    modules,
+    image_url,
+  } = course;
 
   const modulesCount = modules?.length || 0;
   const currentPrice = price ?? 0;
@@ -67,7 +79,11 @@ export default function CourseDetail() {
         <div className="flex-1">
           <div className="bg-white shadow-lg rounded-xl p-6 mb-6">
             {image_url && (
-              <img src={image_url} alt={title} className="w-full h-64 object-cover rounded-lg mb-4" />
+              <img
+                src={image_url}
+                alt={title}
+                className="w-full h-64 object-cover rounded-lg mb-4"
+              />
             )}
             <h1 className="text-4xl font-bold text-gray-900 mb-3">{title}</h1>
             <p className="text-gray-700 mb-4">{description}</p>
@@ -109,20 +125,20 @@ export default function CourseDetail() {
             </div>
           </div>
 
+          {/* ✅ Modules List */}
           {modules?.length > 0 && (
             <div className="bg-white shadow-lg rounded-xl p-6 mb-6">
-              <h2 className="text-2xl font-bold mb-4 text-gray-800">Modules</h2>
-              <ul className="space-y-2">
+              <h2 className="text-2xl font-bold mb-4 text-gray-800">📘 View Modules</h2>
+              <ol className="list-decimal list-inside space-y-3">
                 {modules.map((mod, index) => (
                   <li
                     key={index}
-                    className="bg-gray-50 p-4 rounded-lg shadow-sm hover:shadow-md transition flex justify-between items-center"
+                    className="bg-gray-50 p-4 rounded-lg shadow-sm hover:shadow-md transition text-gray-700"
                   >
-                    <span>{mod.title}</span>
-                    <span className="text-gray-500 text-sm">{mod.duration || "N/A"}</span>
+                    {mod}
                   </li>
                 ))}
-              </ul>
+              </ol>
             </div>
           )}
         </div>
@@ -146,7 +162,7 @@ export default function CourseDetail() {
               </button>
             )}
             <button
-              onClick={() => setShowPreview(true)} // 👈 open modal
+              onClick={() => setShowPreview(true)}
               className="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold shadow hover:bg-gray-300 transition"
             >
               Preview Course
@@ -159,7 +175,6 @@ export default function CourseDetail() {
       {showPreview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white w-[90%] max-w-3xl rounded-2xl shadow-lg overflow-hidden animate-fadeIn relative">
-            {/* Header */}
             <div className="flex justify-between items-center px-6 py-4 border-b">
               <h2 className="text-xl font-semibold text-gray-800">Course Preview</h2>
               <button
@@ -170,10 +185,13 @@ export default function CourseDetail() {
               </button>
             </div>
 
-            {/* Body */}
             <div className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
               {image_url && (
-                <img src={image_url} alt={title} className="w-full h-60 object-cover rounded-lg mb-3" />
+                <img
+                  src={image_url}
+                  alt={title}
+                  className="w-full h-60 object-cover rounded-lg mb-3"
+                />
               )}
               <h3 className="text-2xl font-bold">{title}</h3>
               <p className="text-gray-700">{description}</p>
@@ -181,16 +199,17 @@ export default function CourseDetail() {
               {modules?.length > 0 && (
                 <div>
                   <h4 className="font-semibold text-lg mb-2">Modules Overview</h4>
-                  <ul className="space-y-2">
+                  <ol className="list-decimal list-inside space-y-2">
                     {modules.slice(0, 3).map((mod, i) => (
-                      <li key={i} className="p-3 bg-gray-100 rounded-lg flex justify-between">
-                        <span>{mod.title}</span>
-                        <span className="text-sm text-gray-500">{mod.duration || "N/A"}</span>
+                      <li key={i} className="p-3 bg-gray-100 rounded-lg">
+                        {mod}
                       </li>
                     ))}
-                  </ul>
+                  </ol>
                   {modules.length > 3 && (
-                    <p className="text-sm text-gray-500 mt-2">+ {modules.length - 3} more modules...</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      + {modules.length - 3} more modules...
+                    </p>
                   )}
                 </div>
               )}

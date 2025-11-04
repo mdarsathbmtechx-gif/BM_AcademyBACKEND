@@ -78,10 +78,10 @@ const ContactUs = () => {
             <p>
               📧 Email:{" "}
               <a
-                href="mailto:info@bmacademy.in"
+                href="mailto:admin@abmgroups.org"
                 className="text-yellow-600 font-semibold"
               >
-                info@bmacademy.in
+                admin@abmgroups.org
               </a>
             </p>
             <p>⏱ Support Hours: Mon–Sat 10am–7pm | Sun – Online Support Only</p>

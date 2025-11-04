@@ -495,21 +495,27 @@ def my_courses(request):
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from django.conf import settings
 import jwt
-from courses.models import EnrolledCourse  # 👈 adjust to your model path
+from courses.models import EnrolledCourse
 
 @api_view(["PATCH"])
-@permission_classes([])
+@permission_classes([AllowAny])
 def update_course_status(request, course_id):
     try:
-        # ✅ Step 1: Verify token
+        # ✅ Verify token
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
             return Response({"error": "Authorization token missing"}, status=401)
 
         token = auth_header.split(" ")[1]
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return Response({"error": "Token has expired"}, status=401)
+        except jwt.InvalidTokenError:
+            return Response({"error": "Invalid token"}, status=401)
 
         user_role = (payload.get("role") or "").lower()
         user_email = payload.get("email")
@@ -517,8 +523,7 @@ def update_course_status(request, course_id):
         if user_role != "admin" and user_email != "admin@gmail.com":
             return Response({"error": "Only admins can update course status"}, status=403)
 
-
-        # ✅ Step 2: Extract new status
+        # ✅ Validate status
         new_status = request.data.get("status")
         if not new_status:
             return Response({"error": "Missing 'status' field"}, status=400)
@@ -527,12 +532,12 @@ def update_course_status(request, course_id):
         if new_status not in allowed_statuses:
             return Response({"error": "Invalid status value"}, status=400)
 
-        # ✅ 🔍 Step 3: Add these two debug lines here
+        # ✅ Debug
         print("🧠 course_id from URL:", course_id)
         print("🧠 Existing enrolled course IDs:", [str(c.id) for c in EnrolledCourse.objects.all()])
 
-        # ✅ Step 4: Fetch and update
-        enrolled_course = EnrolledCourse.objects(pk=course_id).first()
+        # ✅ Update
+        enrolled_course = EnrolledCourse.objects(id=course_id).first()
         if not enrolled_course:
             return Response({"error": "Enrolled course not found"}, status=404)
 
@@ -550,10 +555,6 @@ def update_course_status(request, course_id):
             "progress": enrolled_course.progress,
         }, status=200)
 
-    except jwt.ExpiredSignatureError:
-        return Response({"error": "Token has expired"}, status=401)
-    except jwt.InvalidTokenError:
-        return Response({"error": "Invalid token"}, status=401)
     except Exception as e:
         print("❌ ERROR:", e)
         return Response({"error": str(e)}, status=500)
