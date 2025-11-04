@@ -51,20 +51,22 @@ const Users = () => {
   };
 
   // ✅ Update course status both in backend and UI
-  const updateCourseStatus = async (courseId, newStatus) => {
+  const updateCourseStatus = async (enrolledCourseId, newStatus) => {
     try {
-      await axiosInstance.patch(`/courses/${courseId}/update-status/`, {
+      await axiosInstance.patch(`/courses/${enrolledCourseId}/update-status/`, {
         status: newStatus,
       });
 
-      // Update UI instantly
+      // Update the state instantly for a smoother UX
       setSelectedUser((prevUser) => {
         const updatedCourses = prevUser.enrolled_courses.map((course) => {
-          if (course.id === courseId) {
+          if (course.id === enrolledCourseId) {
             let progress = course.progress || 0;
+
             if (newStatus === "Completed") progress = 100;
             else if (newStatus === "In Progress" && progress === 0) progress = 10;
             else if (newStatus === "Not Started") progress = 0;
+
             return { ...course, status: newStatus, progress };
           }
           return course;
@@ -73,8 +75,8 @@ const Users = () => {
       });
 
       toast.success(`✅ Course marked as "${newStatus}"`);
-    } catch (err) {
-      console.error("Error updating course status:", err);
+    } catch (error) {
+      console.error("Error updating course status:", error);
       toast.error("Failed to update course status. Please try again.");
     }
   };
@@ -195,16 +197,18 @@ const Users = () => {
                     <div className="mt-2 flex gap-2 md:mt-0">
                       <button
                         onClick={() => updateCourseStatus(course.id, "In Progress")}
-                        className="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500 transition"
+                        className="px-3 py-1 bg-blue-500 text-white rounded cursor-pointer"
                       >
                         In Progress
                       </button>
+
                       <button
                         onClick={() => updateCourseStatus(course.id, "Completed")}
-                        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
+                        className="px-3 py-1 bg-green-500 text-white rounded cursor-pointer"
                       >
                         Completed
                       </button>
+
                       <button
                         onClick={() => updateCourseStatus(course.id, "Not Started")}
                         className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 transition"

@@ -532,7 +532,7 @@ def update_course_status(request, course_id):
         print("🧠 Existing enrolled course IDs:", [str(c.id) for c in EnrolledCourse.objects.all()])
 
         # ✅ Step 4: Fetch and update
-        enrolled_course = EnrolledCourse.objects(id=course_id).first()
+        enrolled_course = EnrolledCourse.objects(pk=course_id).first()
         if not enrolled_course:
             return Response({"error": "Enrolled course not found"}, status=404)
 
