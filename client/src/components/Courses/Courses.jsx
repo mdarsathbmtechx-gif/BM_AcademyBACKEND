@@ -29,13 +29,17 @@ export default function CoursesSection() {
         "✅ Free SACT Career Test & SAT Scholarship",
       ],
       faq: [
-        { q: "Can I take this course online?", a: "Yes, both offline and live online batches are available." },
+        {
+          q: "Can I take this course online?",
+          a: "Yes, both offline and live online batches are available.",
+        },
       ],
     },
     {
       title: "🎯 Soft Skills & Interview Prep",
       subtitle: "Job readiness & communication mastery",
-      overview: "Build confidence and communication skills for job readiness.",
+      overview:
+        "Build confidence and communication skills for job readiness.",
       learn: [
         "Resume Writing",
         "Group Discussion Practice",
@@ -50,7 +54,10 @@ export default function CoursesSection() {
         "✅ Improve speaking skills",
       ],
       faq: [
-        { q: "Is this useful for college students and job seekers?", a: "Yes, this course is ideal for freshers and working professionals." },
+        {
+          q: "Is this useful for college students and job seekers?",
+          a: "Yes, this course is ideal for freshers and working professionals.",
+        },
       ],
     },
   ];
@@ -73,37 +80,50 @@ export default function CoursesSection() {
               className="w-full flex justify-between items-center p-4 sm:p-6 text-left"
             >
               <div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800">{course.title}</h3>
-                <p className="text-gray-600 text-sm sm:text-base">{course.subtitle}</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
+                  {course.title}
+                </h3>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  {course.subtitle}
+                </p>
               </div>
               {openIndex === i ? <ChevronUp /> : <ChevronDown />}
             </button>
 
             {/* Content */}
             <div
-              className={`px-4 sm:px-6 pb-4 sm:pb-6 text-gray-700 transition-all duration-500 ease-in-out overflow-hidden ${openIndex === i ? "max-h-screen" : "max-h-0"
-                }`}
+              className={`px-4 sm:px-6 pb-4 sm:pb-6 text-gray-700 transition-all duration-500 ease-in-out overflow-hidden ${
+                openIndex === i ? "max-h-screen" : "max-h-0"
+              }`}
             >
               {openIndex === i && (
                 <>
-                  <p className="mb-3"><strong>Overview:</strong> {course.overview}</p>
+                  <p className="mb-3">
+                    <strong>Overview:</strong> {course.overview}
+                  </p>
 
                   <div className="mb-3">
                     <strong>What You Will Learn:</strong>
                     <ul className="list-disc ml-5 sm:ml-6 mt-1 space-y-1">
                       {course.learn.map((item, idx) => (
-                        <li key={idx} className="text-sm sm:text-base">{item}</li>
+                        <li key={idx} className="text-sm sm:text-base">
+                          {item}
+                        </li>
                       ))}
                     </ul>
                   </div>
 
-                  <p className="mb-3"><strong>Duration:</strong> {course.duration}</p>
+                  <p className="mb-3">
+                    <strong>Duration:</strong> {course.duration}
+                  </p>
 
                   <div className="mb-3">
                     <strong>Outcomes:</strong>
                     <ul className="list-disc ml-5 sm:ml-6 mt-1 space-y-1">
                       {course.outcomes.map((item, idx) => (
-                        <li key={idx} className="text-sm sm:text-base">{item}</li>
+                        <li key={idx} className="text-sm sm:text-base">
+                          {item}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -111,20 +131,22 @@ export default function CoursesSection() {
                   <div className="mb-4">
                     <strong>FAQs:</strong>
                     {course.faq.map((f, idx) => (
-                      <p key={idx} className="text-sm sm:text-base mb-1"><b>Q:</b> {f.q} <br /> <b>A:</b> {f.a}</p>
+                      <p
+                        key={idx}
+                        className="text-sm sm:text-base mb-1"
+                      >
+                        <b>Q:</b> {f.q} <br /> <b>A:</b> {f.a}
+                      </p>
                     ))}
                   </div>
 
-                  {/* CTA Buttons */}
+                  {/* CTA Button — only one now */}
                   <div className="flex flex-col sm:flex-row flex-wrap gap-3 mt-4">
                     <a href="tel:+919876543210" className="flex-1">
                       <button className="w-full px-5 py-3 rounded-xl bg-yellow-400 text-black font-semibold shadow hover:bg-yellow-500 transition text-center">
                         📞 Talk to a Counselor
                       </button>
                     </a>
-                    <button className="px-5 py-3 rounded-xl bg-black text-white font-semibold shadow hover:bg-gray-800 transition flex-1 text-center">
-                      📝 Apply Now
-                    </button>
                   </div>
                 </>
               )}
@@ -134,15 +156,29 @@ export default function CoursesSection() {
 
         {/* Career Test & Scholarship */}
         <div className="bg-yellow-100 rounded-2xl p-4 sm:p-6 mt-10 text-center">
-          <h3 className="text-xl sm:text-2xl font-bold mb-4">🔧 Career Test & Scholarship Tools (Free)</h3>
-          <p className="mb-3 text-sm sm:text-base">✅ SACT – Smart Aptitude & Career Test → Get instant report + best-fit course suggestions</p>
+          <h3 className="text-xl sm:text-2xl font-bold mb-4">
+            🔧 Career Test & Scholarship Tools (Free)
+          </h3>
+          <p className="mb-3 text-sm sm:text-base">
+            ✅ SACT – Smart Aptitude & Career Test → Get instant report + best-fit course suggestions
+          </p>
           <div className="flex flex-col sm:flex-row justify-center flex-wrap gap-3 mt-2">
-            <button className="px-5 py-3 rounded-xl bg-black text-white font-semibold shadow hover:bg-gray-800 transition flex-1 sm:flex-auto">
+            <a
+              href="https://scat-topaz.vercel.app/Sact.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-3 rounded-xl bg-black text-white font-semibold shadow hover:bg-gray-800 transition flex-1 sm:flex-auto text-center"
+            >
               Take Free Career Test
-            </button>
-            <button className="px-5 py-3 rounded-xl bg-yellow-400 text-black font-semibold shadow hover:bg-yellow-500 transition flex-1 sm:flex-auto">
+            </a>
+            <a
+              href="https://sample-sat.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-3 rounded-xl bg-yellow-400 text-black font-semibold shadow hover:bg-yellow-500 transition flex-1 sm:flex-auto text-center"
+            >
               Apply for SAT Exam
-            </button>
+            </a>
           </div>
         </div>
       </div>

@@ -14,8 +14,8 @@ class ContactConfig(AppConfig):
             mongo_uri = os.getenv("MONGO_ATLAS_URI") or os.getenv("MONGO_LOCAL_URI")
             if mongo_uri:
                 connect(host=mongo_uri)
-                print("✅ MongoDB connected successfully in app startup")
+                print(" MongoDB connected successfully in app startup")
             else:
-                print("⚠️ No MongoDB URI found in environment")
+                print(" No MongoDB URI found in environment")
         except Exception as e:
-            print("❌ MongoDB connection failed:", e)
+            print("MongoDB connection failed:", e)

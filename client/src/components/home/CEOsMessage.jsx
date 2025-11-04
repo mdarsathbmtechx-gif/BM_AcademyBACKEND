@@ -40,7 +40,7 @@ export const CEOsMessage = () => {
 
         {/* Signature */}
         <p className="mt-4 sm:mt-6 text-yellow-600 font-bold text-xl sm:text-2xl">
-          – [Your Name], Founder & CEO
+          – [B.M.Kamarudeen], Founder & CEO
         </p>
       </div>
     </section>

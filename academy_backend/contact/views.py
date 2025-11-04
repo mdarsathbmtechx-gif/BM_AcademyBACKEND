@@ -1,8 +1,3 @@
-# contact/views.py
-import threading
-from django.core.mail import send_mail
-from django.conf import settings
-# contact/views.py
 import threading
 from django.core.mail import send_mail
 from django.conf import settings
@@ -14,17 +9,17 @@ from .serializers import ContactMessageSerializer
 
 
 def send_email_in_background(subject, message):
-    """Run send_mail in a background thread."""
+    """Send email in a background thread"""
     try:
         send_mail(
             subject=subject,
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.EMAIL_HOST_USER],
+            recipient_list=["mdarsath.bmtechx@gmail.com"],  # ✅ Your inbox here
             fail_silently=False,
         )
     except Exception as e:
-        print("Email sending failed:", e)
+        print("❌ Email sending failed:", e)
 
 
 class ContactMessageCreateView(generics.GenericAPIView):
@@ -35,31 +30,32 @@ class ContactMessageCreateView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        instance = ContactMessage(**serializer.validated_data)
-        instance.save()
+        instance = ContactMessage.objects.create(**serializer.validated_data)
 
-        # Prepare email
-        subject = f"New Contact Message: {instance.subject or 'No Subject'}"
+        # Prepare email content
+        subject = f"📩 New Contact Message from {instance.name}"
         message = f"""
-You have a new contact form submission:
+You have received a new contact form submission:
 
-Name: {instance.name}
-Email: {instance.email}
-Subject: {instance.subject}
-Message:
+👤 Name: {instance.name}
+📧 Email: {instance.email}
+📘 Subject: {instance.subject}
+
+📝 Message:
 {instance.message}
 """
-        # Send email asynchronously
-        threading.Thread(
-            target=send_email_in_background,
-            args=(subject, message)
-        ).start()
 
-        return Response({
-            "id": str(instance.id),
-            "name": instance.name,
-            "email": instance.email,
-            "subject": instance.subject,
-            "message": instance.message,
-            "created_at": instance.created_at
-        }, status=status.HTTP_201_CREATED)
+        # Send email asynchronously
+        threading.Thread(target=send_email_in_background, args=(subject, message)).start()
+
+        return Response(
+            {
+                "id": str(instance.id),
+                "name": instance.name,
+                "email": instance.email,
+                "subject": instance.subject,
+                "message": instance.message,
+                "created_at": instance.created_at,
+            },
+            status=status.HTTP_201_CREATED,
+        )

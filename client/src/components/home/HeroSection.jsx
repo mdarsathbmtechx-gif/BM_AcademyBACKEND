@@ -45,29 +45,32 @@ export default function HeroSection() {
           {/* CTA Buttons */}
           <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-4">
             <a
-              href="#"
-              className="px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-600 flex items-center gap-2"
+              href="https://scat-topaz.vercel.app/Sact.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 rounded-2xl bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-600 flex items-center gap-2 cursor-pointer"
             >
               <FaHandPointRight className="text-black" size={18} />
               Try AI Career Test (SACT)
             </a>
+
             <Link
-  to="/courses"
-  className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-yellow-600 text-black font-semibold hover:bg-yellow-50 transition"
->
-  <FiTarget className="text-black" size={18} />
-  Explore Courses
-</Link>
+              to="/courses"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-yellow-600 text-black font-semibold hover:bg-yellow-50 transition"
+            >
+              <FiTarget className="text-black" size={18} />
+              Explore Courses
+            </Link>
           </div>
         </div>
 
         {/* Right Illustration (Optional Placeholder) */}
         <div className="hidden lg:block">
           <img
-  src={HeroImg}
-  alt="BM Academy Illustration"
-  className="w-full h-auto drop-shadow-xl rounded-2xl"
-/>
+            src={HeroImg}
+            alt="BM Academy Illustration"
+            className="w-full h-auto drop-shadow-xl rounded-2xl"
+          />
 
 
         </div>

@@ -71,11 +71,14 @@ const SACTBanner = () => {
 
                     <div className="flex flex-wrap gap-4">
                         <a
-                            href="/sact"
-                            className="bg-black hover:bg-gray-900 text-yellow-400 font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-[0_0_20px_rgba(255,221,0,0.8)] transition-all duration-300"
+                            href="https://scat-topaz.vercel.app/Sact.html"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-black hover:bg-gray-900 text-yellow-400 font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-[0_0_20px_rgba(255,221,0,0.8)] transition-all duration-300 cursor-pointer"
                         >
                             Take SACT Test Now
                         </a>
+
                         <a
                             href="/how-it-works"
                             className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-[0_0_15px_rgba(0,0,0,0.4)] transition-all duration-300"

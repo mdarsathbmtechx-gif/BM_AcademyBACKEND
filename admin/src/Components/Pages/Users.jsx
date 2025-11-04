@@ -1,6 +1,8 @@
 // client/src/Admin/Users.jsx
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -8,23 +10,32 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
-
   const detailRef = useRef(null);
 
-  // Fetch all users with their courses
+  const BASE_URL = import.meta.env.VITE_BASE_URI.replace(/\/$/, "");
+  const token = localStorage.getItem("access_token");
+
+  // ✅ Create an axios instance with token
+  const axiosInstance = axios.create({
+    baseURL: BASE_URL,
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  // ✅ Fetch all users with enrolled courses
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URI.replace(/\/$/, "")}/users/list-with-courses/`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setUsers(res.data);
+        const res = await axiosInstance.get("/users/list-with-courses/");
+        // Safely handle missing enrolled_courses
+        const sanitizedData = res.data.map((u) => ({
+          ...u,
+          enrolled_courses: u.enrolled_courses || [],
+        }));
+        setUsers(sanitizedData);
       } catch (err) {
         console.error("Error fetching users:", err);
-        alert("Failed to fetch users.");
+        toast.error("Failed to fetch users.");
       } finally {
         setLoading(false);
       }
@@ -32,24 +43,21 @@ const Users = () => {
     fetchUsers();
   }, []);
 
-  // Open user details and scroll to section
+  // ✅ Open user details and scroll smoothly
   const openUserDetails = (user) => {
     setSelectedUser(user);
     setCurrentPage(1);
     setTimeout(() => detailRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
-  // Update course status locally and via backend
+  // ✅ Update course status both in backend and UI
   const updateCourseStatus = async (courseId, newStatus) => {
     try {
-      const token = localStorage.getItem("token");
-      await axios.patch(
-        `${import.meta.env.VITE_BASE_URI.replace(/\/$/, "")}/courses/${courseId}/update-status/`,
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axiosInstance.patch(`/courses/${courseId}/update-status/`, {
+        status: newStatus,
+      });
 
-      // Update selectedUser state locally
+      // Update UI instantly
       setSelectedUser((prevUser) => {
         const updatedCourses = prevUser.enrolled_courses.map((course) => {
           if (course.id === courseId) {
@@ -63,14 +71,22 @@ const Users = () => {
         });
         return { ...prevUser, enrolled_courses: updatedCourses };
       });
+
+      toast.success(`✅ Course marked as "${newStatus}"`);
     } catch (err) {
       console.error("Error updating course status:", err);
-      alert("Failed to update course status. Make sure you are logged in as admin.");
+      toast.error("Failed to update course status. Please try again.");
     }
   };
 
-  if (loading)
-    return <div className="p-10 text-center text-gray-700">Loading users...</div>;
+  // ✅ Loading spinner
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-yellow-500"></div>
+      </div>
+    );
+  }
 
   const totalPages = selectedUser
     ? Math.ceil(selectedUser.enrolled_courses?.length / itemsPerPage)
@@ -87,7 +103,7 @@ const Users = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">All Users</h2>
 
-      {/* Users Table */}
+      {/* 🟨 Users Table */}
       {users.length === 0 ? (
         <p className="text-gray-600">No users found.</p>
       ) : (
@@ -98,7 +114,7 @@ const Users = () => {
                 <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Name</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Email</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Phone</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Enrolled Courses</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Courses</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold uppercase">Actions</th>
               </tr>
             </thead>
@@ -106,12 +122,16 @@ const Users = () => {
               {users.map((user, idx) => (
                 <tr
                   key={user.id || idx}
-                  className={`transition hover:bg-gray-50 ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                  className={`transition hover:bg-gray-50 ${
+                    idx % 2 === 0 ? "bg-gray-50" : "bg-white"
+                  }`}
                 >
-                  <td className="px-6 py-4 text-gray-700">{user.name || "N/A"}</td>
+                  <td className="px-6 py-4 text-gray-700 font-medium">{user.name || "N/A"}</td>
                   <td className="px-6 py-4 text-gray-700">{user.email}</td>
                   <td className="px-6 py-4 text-gray-700">{user.phone || "N/A"}</td>
-                  <td className="px-6 py-4 text-gray-700">{user.enrolled_courses?.length || 0}</td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {user.enrolled_courses?.length || 0}
+                  </td>
                   <td className="px-6 py-4">
                     <button
                       onClick={() => openUserDetails(user)}
@@ -127,7 +147,7 @@ const Users = () => {
         </div>
       )}
 
-      {/* User Details */}
+      {/* 🟨 User Details */}
       {selectedUser && (
         <div ref={detailRef} className="bg-white shadow-lg rounded-xl p-6 mb-6">
           <h3 className="text-2xl font-bold mb-4">{selectedUser.name}'s Details</h3>
@@ -146,9 +166,13 @@ const Users = () => {
                   >
                     <div className="flex-1">
                       <h5 className="text-lg font-semibold">{course.title}</h5>
-                      <p className="text-sm text-gray-600">Enrolled: {new Date(course.enrolled_at).toLocaleDateString()}</p>
+                      <p className="text-sm text-gray-600">
+                        Enrolled: {new Date(course.enrolled_at).toLocaleDateString()}
+                      </p>
                       <p className="text-sm text-gray-600">Price: ₹{course.price}</p>
-                      <p className="text-sm text-gray-600">Status: {course.status || "Not Started"}</p>
+                      <p className="text-sm text-gray-600">
+                        Status: {course.status || "Not Started"}
+                      </p>
 
                       <div className="mt-2 w-full bg-gray-200 rounded-full h-3">
                         <div
@@ -162,9 +186,12 @@ const Users = () => {
                           style={{ width: `${course.progress || 0}%` }}
                         ></div>
                       </div>
-                      <p className="text-xs text-gray-600 mt-1">{course.progress || 0}% completed</p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {course.progress || 0}% completed
+                      </p>
                     </div>
 
+                    {/* 🟨 Action Buttons */}
                     <div className="mt-2 flex gap-2 md:mt-0">
                       <button
                         onClick={() => updateCourseStatus(course.id, "In Progress")}
@@ -189,7 +216,7 @@ const Users = () => {
                 ))}
               </div>
 
-              {/* Pagination */}
+              {/* 🟨 Pagination */}
               <div className="flex justify-center gap-2 mt-4">
                 <button
                   disabled={currentPage === 1}
@@ -198,7 +225,9 @@ const Users = () => {
                 >
                   Prev
                 </button>
-                <span className="px-3 py-1">{currentPage} / {totalPages}</span>
+                <span className="px-3 py-1">
+                  {currentPage} / {totalPages}
+                </span>
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(currentPage + 1)}
@@ -213,6 +242,9 @@ const Users = () => {
           )}
         </div>
       )}
+
+      {/* ✅ Toast Notifications */}
+      <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );
 };

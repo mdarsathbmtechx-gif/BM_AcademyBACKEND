@@ -18,7 +18,8 @@ urlpatterns = [
     path('courses/confirm_payment/', confirm_payment, name='confirm_payment'),
     path('enroll-course/', views.enroll_course, name='enroll_course'),
     path('my-courses/', views.my_courses, name='my_courses'),
-    path('<str:course_id>/update-status/', views.update_course_status, name='update_course_status'),
+    path('courses/<str:course_id>/update-status/', views.update_course_status, name='update_course_status'),
+
 
 
 

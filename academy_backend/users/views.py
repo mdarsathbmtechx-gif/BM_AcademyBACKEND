@@ -178,27 +178,33 @@ class AdminLoginAPIView(APIView):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-
-
 from django.http import JsonResponse
-from users.models import User
+from users.models import User as MongoUser
+from courses.models import EnrolledCourse
 
+
+# ✅ 1️⃣ Basic User List (for /api/users/list/)
 def list_users(request):
     if request.method == "GET":
-        users = User.objects.all()  
-        users_list = [
-            {
-                "id": str(user.id),
-                "name": getattr(user, "name", ""),
-                "email": user.email,
-                "phone": getattr(user, "phone", ""),
-            }
-            for user in users
-        ]
-        return JsonResponse(users_list, safe=False)
-    
-    
+        try:
+            users = MongoUser.objects.all()
+            users_list = [
+                {
+                    "id": str(user.id),
+                    "name": getattr(user, "name", ""),
+                    "email": getattr(user, "email", ""),
+                    "phone": getattr(user, "phone", ""),
+                }
+                for user in users
+            ]
+            return JsonResponse(users_list, safe=False)
+        except Exception as e:
+            print("❌ ERROR in list_users:", e)
+            return JsonResponse({"error": str(e)}, status=500)
 
+
+
+# ✅ 2️⃣ User List with Enrolled Courses (for /api/users/list-with-courses/)
 # users/views.py
 from django.http import JsonResponse
 from users.models import User as MongoUser
@@ -206,35 +212,46 @@ from courses.models import EnrolledCourse
 
 def list_users_with_courses(request):
     if request.method == "GET":
-        users = MongoUser.objects.all()
-        users_list = []
+        try:
+            users_data = []
+            users = MongoUser.objects.all()
 
-        for user in users:
-            enrolled = EnrolledCourse.objects(user=user)
-            courses_list = [
-    {
-        "id": str(e.course.id),
-        "title": e.course.title,
-        "enrolled_at": e.enrolled_at.isoformat(),
-        "price": e.course.price,
-        "progress": getattr(e, "progress", 0),
-        "status": getattr(e, "status", "Not Started")
-    }
-    for e in enrolled
-]
+            for user in users:
+                enrolled_courses = EnrolledCourse.objects(user=user)
+                courses_list = []
 
+                for e in enrolled_courses:
+                    # ✅ Check if referenced course exists
+                    try:
+                        course = e.course
+                        if not course:
+                            continue
+                    except Exception as err:
+                        print(f"⚠️ Skipping broken course ref for user {user.id}: {err}")
+                        continue
 
-            users_list.append({
-                "id": str(user.id),
-                "name": getattr(user, "name", ""),
-                "email": user.email,
-                "phone": getattr(user, "phone", ""),
-                "enrolled_courses": courses_list
-            })
+                    courses_list.append({
+                        "id": str(course.id),
+                        "title": getattr(course, "title", ""),
+                        "enrolled_at": e.enrolled_at.isoformat() if e.enrolled_at else None,
+                        "price": getattr(course, "price", 0),
+                        "progress": getattr(e, "progress", 0),
+                        "status": getattr(e, "status", "Not Started")
+                    })
 
-        return JsonResponse(users_list, safe=False)
+                users_data.append({
+                    "id": str(user.id),
+                    "name": getattr(user, "name", ""),
+                    "email": getattr(user, "email", ""),
+                    "phone": getattr(user, "phone", ""),
+                    "enrolled_courses": courses_list
+                })
 
+            return JsonResponse(users_data, safe=False)
 
+        except Exception as e:
+            print("❌ ERROR in list_users_with_courses:", e)
+            return JsonResponse({"error": str(e)}, status=500)
 
 
 from django.http import JsonResponse

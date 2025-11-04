@@ -9,26 +9,46 @@ export default function Testimonials() {
 
   const getSlides = () => {
     const w = typeof window !== "undefined" ? window.innerWidth : 1280;
-    if (w < 640) return 1;        // sm
-    if (w < 1024) return 2;       // md (and up to lg)
-    return 3;                     // lg+
+    if (w < 640) return 1;
+    if (w < 1024) return 2;
+    return 3;
   };
 
-  // Set the correct value immediately to avoid a flash of 3 on md
   const [slidesToShow, setSlidesToShow] = useState(getSlides());
 
   useEffect(() => {
     const onResize = () => setSlidesToShow(getSlides());
-    onResize(); // ensure correct on first mount
+    onResize();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
   const testimonials = [
-    { quote: "BM Academy helped me crack TNPSC Group 4 on my first try!", name: "Nithya R.", avatar: "https://i.pravatar.cc/100?img=47" },
-    { quote: "Thanks to their Web Development course, I landed a job at a startup!", name: "Arun P.", avatar: "https://i.pravatar.cc/100?img=32" },
-    { quote: "The SACT Test gave me clarity on choosing the right career path.", name: "Kavitha M.", avatar: "https://i.pravatar.cc/100?img=12" },
-    { quote: "The faculty support was amazing and very motivating.", name: "Praveen S.", avatar: "https://i.pravatar.cc/100?img=68" },
+    {
+      quote: "BM Academy’s TNPSC classes were life-changing! I cleared Group 2 with strong fundamentals and guidance.",
+      name: "Priya S., Madurai",
+      avatar: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=300&q=80", // Indian woman smiling
+    },
+    {
+      quote: "The Web Development course gave me the skills to become a frontend developer in Bangalore!",
+      name: "Rahul V., Chennai",
+      avatar: "https://images.unsplash.com/photo-1628890923661-7c9c64145c0f?w=300&q=80", // Indian man with laptop
+    },
+    {
+      quote: "The SACT Test helped me discover my interest in design. BM Academy guided me to the right career.",
+      name: "Aditi K., Coimbatore",
+      avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=300&q=80", // Indian young woman smiling
+    },
+    {
+      quote: "Excellent teachers and personalized attention — BM Academy motivated me throughout my preparation.",
+      name: "Sanjay M., Trichy",
+      avatar: "https://images.unsplash.com/photo-1601582588203-96d58c86cf5c?w=300&q=80", // Indian male student
+    },
+    {
+      quote: "Their online classes were flexible and easy to follow. I could balance work and study perfectly.",
+      name: "Meena L., Salem",
+      avatar: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=300&q=80", // Indian female portrait
+    },
   ];
 
   const settings = {
@@ -37,7 +57,7 @@ export default function Testimonials() {
     infinite: true,
     speed: 500,
     cssEase: "ease-in-out",
-    slidesToShow,              // 👈 controlled by us
+    slidesToShow,
     slidesToScroll: 1,
     adaptiveHeight: true,
     swipeToSlide: true,
@@ -46,7 +66,6 @@ export default function Testimonials() {
     autoplaySpeed: 3000,
     pauseOnHover: false,
     pauseOnDotsHover: false,
-    // IMPORTANT: no "responsive" array — we’re bypassing that bug
   };
 
   return (
@@ -57,7 +76,6 @@ export default function Testimonials() {
           Student Testimonials
         </h2>
 
-        {/* key={slidesToShow} forces a clean remount when the count changes */}
         <Slider ref={sliderRef} {...settings} key={slidesToShow} className="!overflow-visible">
           {testimonials.map((t, index) => (
             <div key={index} className="px-2 sm:px-4 !flex !justify-center">
@@ -66,6 +84,7 @@ export default function Testimonials() {
                   src={t.avatar}
                   alt={t.name}
                   className="w-16 h-16 rounded-full border-2 border-yellow-400 mb-4 object-cover"
+                  loading="lazy"
                 />
                 <p className="text-gray-700 italic leading-relaxed">
                   "{t.quote}"

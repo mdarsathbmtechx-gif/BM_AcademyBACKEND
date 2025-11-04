@@ -12,22 +12,22 @@ const AboutBanner = () => {
 
         {/* Key Points */}
         <div className="grid md:grid-cols-2 gap-8 text-left">
-          <div className="p-6 hover:bg-yellow-400  rounded-2xl shadow hover:shadow-lg transition">
+          <div className="p-6 hover:bg-yellow-400 rounded-2xl shadow hover:shadow-lg transition">
             <h3 className="text-xl font-semibold mb-2">✅ AI-Driven Career Support</h3>
             <p className="text-gray-700">
               Our exclusive <b>SACT (Smart Aptitude & Career Test)</b> helps students
-              find the right path based on interest, personality, and aptitude —
-              no guesswork, only clarity.
+              find the right path based on interest, personality, and aptitude — no
+              guesswork, only clarity.
             </p>
           </div>
-          <div className="bg-white shadow-md rounded-2xl p-6 hover:bg-yellow-400  rounded-2xl shadow hover:shadow-lg transition">
+          <div className="bg-white shadow-md rounded-2xl p-6 hover:bg-yellow-400 hover:shadow-lg transition">
             <h3 className="text-xl font-semibold mb-2">✅ Scholarships for All</h3>
             <p className="text-gray-700">
-              With our <b>SAT Entrance Exam</b>, deserving students get up to 85%
-              fee waivers — making career education affordable and inclusive.
+              With our <b>SAT Entrance Exam</b>, deserving students get up to 85% fee
+              waivers — making career education affordable and inclusive.
             </p>
           </div>
-          <div className="bg-white shadow-md rounded-2xl p-6 hover:bg-yellow-400  rounded-2xl shadow hover:shadow-lg transition">
+          <div className="bg-white shadow-md rounded-2xl p-6 hover:bg-yellow-400 hover:shadow-lg transition">
             <h3 className="text-xl font-semibold mb-2">✅ Job-Focused Courses</h3>
             <p className="text-gray-700">
               From <b>Government Job Coaching</b> to Web Development, AI, Digital
@@ -35,27 +35,24 @@ const AboutBanner = () => {
               placement-driven.
             </p>
           </div>
-          <div className="bg-white shadow-md rounded-2xl  p-6 hover:bg-yellow-400  rounded-2xl shadow hover:shadow-lg transition">
+          <div className="bg-white shadow-md rounded-2xl p-6 hover:bg-yellow-400 hover:shadow-lg transition">
             <h3 className="text-xl font-semibold mb-2">✅ Support from BM Foundation</h3>
             <p className="text-gray-700">
               We are committed to social impact. Through BM Foundation, we support
-              underprivileged students with free guidance, resources, and
-              mentorship.
+              underprivileged students with free guidance, resources, and mentorship.
             </p>
           </div>
         </div>
 
         {/* Founder Message */}
         <div className="mt-16 max-w-4xl mx-auto bg-yellow-100 rounded-2xl shadow p-8">
-          <h3 className="text-2xl font-bold mb-4">
-            💬 A Message from Our Founder & CEO
-          </h3>
+          <h3 className="text-2xl font-bold mb-4">💬 A Message from Our Founder & CEO</h3>
           <p className="text-gray-800 italic mb-4">
             "BM Academy is more than an institute — it’s a commitment to every
-            learner’s future. We believe no student should be left behind due to
-            lack of guidance or financial limits. With the help of AI tools like
-            SACT and scholarship programs via SAT, we want to be the bridge
-            between ambition and achievement."
+            learner’s future. We believe no student should be left behind due to lack
+            of guidance or financial limits. With the help of AI tools like SACT and
+            scholarship programs via SAT, we want to be the bridge between ambition
+            and achievement."
           </p>
           <p className="font-semibold">– [Your Name], CEO & Founder, BM Academy</p>
         </div>
@@ -88,29 +85,38 @@ const AboutBanner = () => {
           <h3 className="text-3xl font-bold mb-6">🔗 Explore More</h3>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
-  to="/courses"
-  className="px-6 py-3 rounded-xl bg-yellow-400 text-black font-semibold hover:bg-yellow-500"
->
-  📘 Browse Our Courses
-</Link>
-            <a
-              href="#career-test"
-              className="px-6 py-3 rounded-xl bg-black text-white font-semibold hover:bg-gray-800"
-            >
-              🎯 Try Free Career Test – SACT
-            </a>
-            <a
-              href="#scholarship"
+              to="/courses"
               className="px-6 py-3 rounded-xl bg-yellow-400 text-black font-semibold hover:bg-yellow-500"
             >
-              📝 Apply for Scholarship (SAT)
-            </a>
+              📘 Browse Our Courses
+            </Link>
+
+            {/* ✅ Use external links for SACT and SAT (same as Navbar) */}
             <a
-              href="#contact"
+  href="https://scat-topaz.vercel.app/Sact.html"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="px-6 py-3 rounded-xl bg-black text-white font-semibold hover:bg-gray-800"
+>
+  🎯 Try Free Career Test – SACT
+</a>
+
+<a
+  href="https://sample-sat.vercel.app/"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="px-6 py-3 rounded-xl bg-yellow-400 text-black font-semibold hover:bg-yellow-500"
+>
+  📝 Apply for Scholarship (SAT)
+</a>
+
+
+            <Link
+              to="/contacts"
               className="px-6 py-3 rounded-xl bg-black text-white font-semibold hover:bg-gray-800"
             >
               📞 Contact Our Team
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -119,8 +125,8 @@ const AboutBanner = () => {
           <h3 className="text-3xl font-bold mb-4">👣 Join Our Mission</h3>
           <p className="text-lg text-gray-700 leading-relaxed">
             Whether you’re a student, parent, or educator — BM Academy welcomes you
-            to be part of a future-focused education movement. Let’s build a
-            stronger, skilled India — one student at a time.
+            to be part of a future-focused education movement. Let’s build a stronger,
+            skilled India — one student at a time.
           </p>
         </div>
       </div>
