@@ -14,7 +14,7 @@ export default function StudentDashboard() {
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/login" />;
 
-  // Add new course from Payments.jsx navigation state
+  // ✅ Add new course from Payments.jsx navigation state
   useEffect(() => {
     if (location.state?.newCourse) {
       setEnrolledCourses(prev => {
@@ -24,7 +24,7 @@ export default function StudentDashboard() {
     }
   }, [location.state]);
 
-  // Fetch enrolled courses from backend
+  // ✅ Fetch enrolled courses from backend
   useEffect(() => {
     const fetchEnrolledCourses = async () => {
       try {
@@ -43,19 +43,34 @@ export default function StudentDashboard() {
     fetchEnrolledCourses();
   }, [token]);
 
+  // ✅ Dashboard summary calculations
+  const totalCourses = enrolledCourses.length;
+  const completedCourses = enrolledCourses.filter(c => c.status === "Completed").length;
+  const inProgressCourses = enrolledCourses.filter(c => c.status === "In Progress").length;
+  const notStartedCourses = totalCourses - completedCourses - inProgressCourses;
+  const avgProgress = totalCourses
+    ? Math.round(enrolledCourses.reduce((sum, c) => sum + (c.progress || 0), 0) / totalCourses)
+    : 0;
+
+  // ✅ Breadcrumbs setup
   const breadcrumb = ["Dashboard"];
   if (currentPage !== "Dashboard") breadcrumb.push(currentPage);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="mt-18 flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
       <Sidebar onNavigate={setCurrentPage} current={currentPage} />
+
+      {/* Main Content */}
       <main className="flex-1 p-8">
         <Breadcrumbs items={breadcrumb} />
-        <h2 className="pt-18 text-2xl font-bold text-gray-800 mb-6">{currentPage}</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">{currentPage}</h2>
 
+        {/* Loading state */}
         {loading ? (
           <div className="text-center text-gray-700">Loading...</div>
         ) : currentPage === "My Courses" ? (
+          /* ================== My Courses Section ================== */
           <div className="p-6">
             <h3 className="text-xl font-semibold mb-4 text-gray-800">My Enrolled Courses</h3>
             {enrolledCourses.length === 0 ? (
@@ -70,11 +85,22 @@ export default function StudentDashboard() {
                       className="h-40 w-full object-cover rounded-md mb-4"
                     />
                     <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-                    <p className="text-gray-600 mb-2">{course.description}</p>
+                    <p className="text-gray-600 mb-2 line-clamp-3">{course.description}</p>
                     <p className="text-green-600 font-semibold mb-2">₹{course.price}</p>
                     <p className="text-sm text-gray-500 mb-2">Duration: {course.duration}</p>
                     <p className="text-sm text-gray-500 mb-2">
                       Enrolled At: {new Date(course.enrolled_at).toLocaleDateString()}
+                    </p>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          course.progress >= 100 ? "bg-green-500" : "bg-blue-500"
+                        }`}
+                        style={{ width: `${course.progress || 0}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {course.progress || 0}% complete
                     </p>
                   </div>
                 ))}
@@ -82,8 +108,89 @@ export default function StudentDashboard() {
             )}
           </div>
         ) : currentPage === "Dashboard" ? (
-          <div>
-            <p className="text-gray-600">Welcome to your dashboard! Use the sidebar to explore your courses and profile.</p>
+          /* ================== Dashboard Summary Section ================== */
+          <div className="space-y-10">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-blue-100 text-blue-800 p-5 rounded-xl shadow text-center">
+                <h3 className="text-lg font-semibold">Total Courses</h3>
+                <p className="text-3xl font-bold">{totalCourses}</p>
+              </div>
+              <div className="bg-green-100 text-green-800 p-5 rounded-xl shadow text-center">
+                <h3 className="text-lg font-semibold">Completed</h3>
+                <p className="text-3xl font-bold">{completedCourses}</p>
+              </div>
+              <div className="bg-yellow-100 text-yellow-800 p-5 rounded-xl shadow text-center">
+                <h3 className="text-lg font-semibold">In Progress</h3>
+                <p className="text-3xl font-bold">{inProgressCourses}</p>
+              </div>
+              <div className="bg-gray-100 text-gray-800 p-5 rounded-xl shadow text-center">
+                <h3 className="text-lg font-semibold">Not Started</h3>
+                <p className="text-3xl font-bold">{notStartedCourses}</p>
+              </div>
+            </div>
+
+            {/* Overall Progress */}
+            <div className="bg-white shadow-lg rounded-xl p-6">
+              <h3 className="text-xl font-semibold mb-3 text-gray-800">Overall Progress</h3>
+              <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
+                <div
+                  className="bg-blue-500 h-4 rounded-full"
+                  style={{ width: `${avgProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-gray-600 text-sm">{avgProgress}% completed on average</p>
+            </div>
+
+            {/* Recent Courses */}
+            <div>
+              <h3 className="text-2xl font-semibold mb-4 text-gray-800">Recent Courses</h3>
+              {enrolledCourses.length === 0 ? (
+                <p className="text-gray-600">No courses to display yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {enrolledCourses.slice(0, 3).map(course => (
+                    <div key={course.id} className="bg-white shadow-md rounded-xl overflow-hidden">
+                      <img
+                        src={course.image_url || "/logo.png"}
+                        alt={course.title}
+                        className="h-40 w-full object-cover"
+                      />
+                      <div className="p-4">
+                        <h4 className="text-lg font-semibold mb-2 text-gray-800">
+                          {course.title}
+                        </h4>
+                        <p className="text-sm text-gray-500 mb-2">
+                          Status:{" "}
+                          <span
+                            className={`font-semibold ${
+                              course.status === "Completed"
+                                ? "text-green-600"
+                                : course.status === "In Progress"
+                                ? "text-yellow-600"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {course.status}
+                          </span>
+                        </p>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full ${
+                              course.progress >= 100 ? "bg-green-500" : "bg-blue-500"
+                            }`}
+                            style={{ width: `${course.progress || 0}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {course.progress || 0}% complete
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         ) : currentPage === "Profile" ? (
           <div>

@@ -1,9 +1,8 @@
-// src/components/home/Navbar.jsx
 import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { FaUserCircle } from "react-icons/fa";
-import Logo from "../../assets/img/Bm Academy logo .png";
 import { Link, useNavigate } from "react-router-dom";
+import Logo from "../../assets/img/Bm Academy logo .png";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -84,35 +83,36 @@ export default function Navbar() {
     navigate("/login");
   };
 
+  if (loading) return null;
+
   const authButtons = (
     <>
       <Link to="/login">
-        <button className="w-[140px] h-[46px] rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-semibold hover:shadow-lg transition-all duration-300">
+        <button className="w-[120px] h-[42px] rounded-lg bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 hover:shadow-lg transition-all duration-300">
           Login
         </button>
       </Link>
       <Link to="/signup">
-        <button className="w-[140px] h-[46px] rounded-lg border border-yellow-500 text-yellow-600 font-semibold hover:bg-yellow-500 hover:text-white transition-all duration-300">
+        <button className="w-[120px] h-[42px] rounded-lg border border-yellow-500 text-yellow-600 font-semibold bg-white hover:bg-yellow-500 hover:text-white shadow-sm hover:shadow-lg transition-all duration-300">
           Sign Up
         </button>
       </Link>
     </>
   );
 
-  if (loading) return null;
-
   return (
-    <nav className="fixed w-full top-0 left-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+    <nav className="fixed w-full top-0 left-0 z-50 bg-white shadow-md">
       <div className="flex justify-between items-center h-20 px-6 lg:px-12">
+        {/* Logo */}
         <Link to="/">
           <img
             src={Logo}
             alt="BM Academy"
-            className="max-h-24 md:max-h-28 w-auto object-contain"
+            className="h-16 md:h-20 w-auto object-contain"
           />
         </Link>
 
-        {/* Desktop Links */}
+        {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-8">
           {navLinks.map((link) =>
             link.external ? (
@@ -121,7 +121,7 @@ export default function Navbar() {
                 href={link.external}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative text-gray-700 hover:text-yellow-600 font-medium transition duration-200 group"
+                className="relative text-gray-800 hover:text-yellow-600 font-medium transition duration-200 group"
               >
                 {link.name}
                 <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-yellow-500 transition-all duration-300 group-hover:w-full"></span>
@@ -130,7 +130,7 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 to={link.path}
-                className="relative text-gray-700 hover:text-yellow-600 font-medium transition duration-200 group"
+                className="relative text-gray-800 hover:text-yellow-600 font-medium transition duration-200 group"
               >
                 {link.name}
                 <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-yellow-500 transition-all duration-300 group-hover:w-full"></span>
@@ -177,7 +177,7 @@ export default function Navbar() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-gray-700 focus:outline-none hover:text-yellow-600 transition"
+          className="md:hidden text-gray-800 focus:outline-none hover:text-yellow-600 transition"
           onClick={() => setIsOpen(true)}
         >
           <Menu size={28} />
@@ -187,19 +187,19 @@ export default function Navbar() {
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
+          className="fixed inset-0 bg-black/40 z-40 md:hidden transition-opacity"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer (Solid Background) */}
       <div
-        className={`fixed top-0 right-0 h-full w-72 bg-white/95 backdrop-blur-lg shadow-xl z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-700">Menu</h2>
+          <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
           <button onClick={() => setIsOpen(false)}>
             <X size={24} className="text-gray-600 hover:text-yellow-600" />
           </button>
@@ -231,7 +231,7 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="border-t border-gray-100 mt-4 p-5">
+        <div className="border-t border-gray-100 mt-4 p-5 bg-white">
           {isLoggedIn ? (
             <div className="flex flex-col space-y-3">
               <Link
@@ -253,7 +253,18 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            <div className="flex flex-col space-y-3">{authButtons}</div>
+            <div className="flex flex-col space-y-3">
+              <Link to="/login" onClick={() => setIsOpen(false)}>
+                <button className="w-full h-[46px] rounded-lg bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 hover:shadow-lg transition-all duration-300">
+                  Login
+                </button>
+              </Link>
+              <Link to="/signup" onClick={() => setIsOpen(false)}>
+                <button className="w-full h-[46px] rounded-lg border border-yellow-500 text-yellow-600 font-semibold bg-white hover:bg-yellow-500 hover:text-white shadow-sm hover:shadow-lg transition-all duration-300">
+                  Sign Up
+                </button>
+              </Link>
+            </div>
           )}
         </div>
       </div>

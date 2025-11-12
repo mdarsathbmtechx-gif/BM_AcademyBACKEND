@@ -54,7 +54,7 @@ const AboutBanner = () => {
             scholarship programs via SAT, we want to be the bridge between ambition
             and achievement."
           </p>
-          <p className="font-semibold">– [Your Name], CEO & Founder, BM Academy</p>
+          <p className="font-semibold">– [B.M.Kamarudeen], CEO & Founder, BM Academy</p>
         </div>
 
         {/* Achievements */}

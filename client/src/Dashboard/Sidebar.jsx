@@ -2,7 +2,7 @@
 import React from "react";
 import { FaHome, FaBook, FaUser } from "react-icons/fa";
 
-export default function Sidebar({ onNavigate, current }) {
+export default function  Sidebar({ onNavigate, current }) {
   const navItems = [
     { name: "Dashboard", icon: <FaHome /> },
     { name: "My Courses", icon: <FaBook /> }, // <-- added
